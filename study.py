@@ -68,9 +68,9 @@ if __name__ == '__main__':
     # headers = fe.extract_features()
     # fe.write_data_to_csv_file(headers, file_label_indexes, "data.csv", "train")
     # 读取数据
-    torch_data, torch_label = da.csv_handle("data.csv")
+    # torch_data, torch_label = da.csv_handle("data.csv")
     # 进行训练
-    train_process(torch_data, torch_label)
+    # train_process(torch_data, torch_label)
 
     # 进行测试集合的验证
     # test_label_indexes = bf.get_filename("test")
