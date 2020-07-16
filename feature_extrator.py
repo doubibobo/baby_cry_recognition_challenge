@@ -8,6 +8,7 @@ import torch
 
 import data.code.build_file_index as bf
 
+
 "建立训练时的标签和语音类别的映射关系"
 classes_labels = ["awake", "diaper", "hug", "hungry", "sleepy", "uncomfortable"]
 
