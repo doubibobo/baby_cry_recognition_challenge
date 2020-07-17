@@ -113,11 +113,15 @@ def write_result_to_csv(data_file, filename, results):
         wav_paths = data.iloc[:, [0]].T
         wav_paths = np.matrix.tolist(wav_paths)[0]
 
+        print(wav_paths)
+
         dictionary = {}
         print(len(results))
+        print(results)
         for i in range(len(results)):
             dictionary[wav_paths[i]] = results[i]
-            to_append = f'{wav_paths[i]} {classes_labels[results[i].data.numpy()]} '
+            # to_append = f'{wav_paths[i]} {classes_labels[results[i].data.numpy()]} '
+            to_append = f'{wav_paths[i]} {classes_labels[results[i]]} '
             file = open(filename, 'a', newline='')
             with file:
                 writer = csv.writer(file)
