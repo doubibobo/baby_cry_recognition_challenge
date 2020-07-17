@@ -153,7 +153,7 @@ class SVM:
         parameter_changed = 1       # 单次训练中如果参数有改变则增加1
 
         while (iteration_step < self.max_iteration) and parameter_changed > 0:
-            print('iteration:%d:%d' % (iteration_step, self.max_iteration))
+            # print('iteration:%d max_iteration:%d' % (iteration_step + 1, self.max_iteration))
             iteration_step += 1
             parameter_changed = 0
 
@@ -221,7 +221,7 @@ class SVM:
                         parameter_changed += 1
 
                 # 打印迭代轮数，i值
-                print("iteration: %d i:%d, pairs changed %d" % (iteration_step, i, parameter_changed))
+                # print("iteration: %d i:%d, pairs changed %d" % (iteration_step, i, parameter_changed))
 
         # 迭代完成，即计算完成之后，重新遍历一遍alpha，查找其中的支持向量
         for i in range(self.sample_number):
@@ -259,7 +259,7 @@ class SVM:
         """
         error_count = 0     # 预测错误的样本数目
         for i in range(len(data_test)):
-            print("test: %d: %d" % (i, len(data_test)))
+            # print("test: %d: %d" % (i, len(data_test)))
             # 获取预测结果
             result = self.predict(data_test[i])
             if result != label_test[i]:
