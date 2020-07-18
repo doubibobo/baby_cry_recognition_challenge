@@ -1,4 +1,3 @@
-import torch
 import time
 import pickle
 
@@ -8,7 +7,7 @@ from data.code.SVM.multi_svm import MultiSVM
 from data.code.feature_extrator import write_result_to_csv
 from data.code.feature_extrator import extract_features
 
-K_NUMBER = 32  # 进行10折交叉验证
+K_NUMBER = 10  # 进行10折交叉验证
 CLASSES_NUMBER = 6  # 总共有六种类型的数据
 SIGMA = 10  # 取高斯核的sigma为10
 
@@ -78,4 +77,3 @@ if __name__ == '__main__':
     write_result_to_csv("test.csv", "result.csv", test_processing(test_data))
 
     print('time span: ', time.time() - time_start)
-
