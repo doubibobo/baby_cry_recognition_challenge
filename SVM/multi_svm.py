@@ -3,7 +3,6 @@ from data.code.data_analysis import get_k_fold_data
 
 import numpy
 import torch
-import time
 
 
 class MultiSVM:
@@ -92,10 +91,11 @@ class MultiSVM:
                 svm_number += 1
                 # 标记好是哪两类的svm
                 self.mapping.append([i, j])
+
+                print("第", svm_number + 1, "个分类器")
+
                 # 用k折划分法对数据进行分类
                 for k in range(self.K_NUMBER):
-                    print("第 %d 折SVM二分类器" % k)
-                    start_time = time.time()
                     data_train, label_train, data_test, label_test = get_k_fold_data(self.K_NUMBER, k, data_sum,
                                                                                      label_sum)
                     # 创建i和j类的SVM
@@ -108,9 +108,12 @@ class MultiSVM:
                     if accuracy >= best_accuracy:
                         self.svm[svm_number] = svm
                         self.accuracy[svm_number] = accuracy
-                        print("the best accuracy is %f" % accuracy)
-                    print("训练一个二分类器花费的时间", time.time() - start_time)
-                    break
+                    if accuracy >= 0.90:
+                        print("the accuracy is ", accuracy)
+                        break
+                    else:
+                        print("the accuracy is ", accuracy)
+                        continue
 
     def decide(self, x):
         """
