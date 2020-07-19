@@ -3,12 +3,14 @@ from data.code.data_analysis import get_k_fold_data
 
 import numpy
 import torch
+import time
 
 
 class MultiSVM:
     """
     用于多分类的SVM类
     """
+
     def __init__(self, classes_number, data, label, sigma, k_number):
         """
         构造方法
@@ -30,6 +32,21 @@ class MultiSVM:
         self.mapping = []
 
         self.K_NUMBER = k_number
+        # self.gpu_available = gpu_available
+
+    # def gpu_convert(self):
+    #     if self.gpu_available:
+    #         self.classes_number = self.classes_number.cuda()
+    #         self.data = self.data.cuda()
+    #         self.label = self.label.cuda()
+    #         self.sigma = self.sigma.cuda()
+    #         self.svm_number = self.svm_number.cuda()
+    #         self.classes_index = self.classes_index.cuda()
+    #         self.svm = self.svm.cuda()
+    #         self.accuracy = self.accuracy.cuda()
+    #         self.mapping = self.mapping.cuda()
+    #         self.K_NUMBER = self.K_NUMBER.cuda()
+    #         self.gpu_available = self.gpu_available.cuda()
 
     def create_label_index(self):
         """
@@ -61,6 +78,7 @@ class MultiSVM:
         self.create_label_index()
         svm_number = -1
         for i in range(self.classes_number):
+            print("第%d个SVM分类器" % i)
             data_i, label_i = self.create_dataset(i)
             # 将i类的标签设置为正类的1
             label_i = torch.ones(len(label_i))
@@ -76,16 +94,23 @@ class MultiSVM:
                 self.mapping.append([i, j])
                 # 用k折划分法对数据进行分类
                 for k in range(self.K_NUMBER):
-                    data_train, label_train, data_test, label_test = get_k_fold_data(self.K_NUMBER, k, data_sum, label_sum)
+                    print("第 %d 折SVM二分类器" % k)
+                    start_time = time.time()
+                    data_train, label_train, data_test, label_test = get_k_fold_data(self.K_NUMBER, k, data_sum,
+                                                                                     label_sum)
                     # 创建i和j类的SVM
                     svm = SVM(data_train, label_train, self.sigma)
                     # 对每一份数据进行训练
                     svm.train()
                     # 进行测试
                     accuracy = svm.test(data_test, label_test)
+                    print("now accuracy is ", accuracy)
                     if accuracy >= best_accuracy:
                         self.svm[svm_number] = svm
                         self.accuracy[svm_number] = accuracy
+                        print("the best accuracy is %f" % accuracy)
+                    print("训练一个二分类器花费的时间", time.time() - start_time)
+                    break
 
     def decide(self, x):
         """
@@ -95,6 +120,9 @@ class MultiSVM:
         """
         result = [0 for _ in range(self.classes_number)]
         for i in range(self.svm_number):
+            # 删除掉精确度不高的二分类SVM，检查一下准确率
+            if i in (3, 6, 13):
+                continue
             predict_temp = self.svm[i].predict(x)
             # print("this is the %dth svm:" % i)
             # print(predict_temp)
