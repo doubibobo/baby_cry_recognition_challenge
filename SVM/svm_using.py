@@ -38,6 +38,7 @@ def train_processing(data_train, label_train):
                 pickle.dump(multi_svm, file)
         print('train_accuracy: %.6f' % accuracy)
         print('*' * 25, '第', m + 1, '折SVM多分类器结束', '*' * 25)
+        break
 
     print('#' * 10, '最终k折交叉验证结果', '#' * 10)
     print('train_accuracy_sum: %.6f' % best_accuracy)
@@ -50,7 +51,7 @@ def test_processing(data_test):
     :return: 无返回值
     """
     # prediction = torch.load('multi_svm.pkl')(data_test.float())
-    pk_filename = "multi_svm.pkl"
+    pk_filename = "multi_svm_1.pkl"
     with open(pk_filename, 'rb') as file:
         pickle_model = pickle.load(file)
     prediction = []
@@ -66,14 +67,14 @@ def test_processing(data_test):
 
 
 if __name__ == '__main__':
-    time_start = time.time()
-    torch_data, torch_label = csv_handle("data.csv")
-    # 进行训练
-    train_processing(torch_data, torch_label)
-    # 进行测试集合的验证
-    headers = extract_features()
+    # time_start = time.time()
+    # torch_data, torch_label = csv_handle("data_1.csv")
+    # # 进行训练
+    # train_processing(torch_data, torch_label)
+    # # 进行测试集合的验证
+    # headers = extract_features()
 
-    test_data, _ = csv_handle("test.csv")
-    write_result_to_csv("test.csv", "result.csv", test_processing(test_data))
+    test_data, _ = csv_handle("test_1.csv")
+    write_result_to_csv("test_1.csv", "result.csv", test_processing(test_data))
 
-    print('time span: ', time.time() - time_start)
+    # print('time span: ', time.time() - time_start)
