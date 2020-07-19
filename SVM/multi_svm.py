@@ -9,6 +9,7 @@ class MultiSVM:
     """
     用于多分类的SVM类
     """
+
     def __init__(self, classes_number, data, label, sigma, k_number):
         """
         构造方法
@@ -74,9 +75,13 @@ class MultiSVM:
                 svm_number += 1
                 # 标记好是哪两类的svm
                 self.mapping.append([i, j])
+
+                print("第", svm_number + 1, "个分类器")
+
                 # 用k折划分法对数据进行分类
                 for k in range(self.K_NUMBER):
-                    data_train, label_train, data_test, label_test = get_k_fold_data(self.K_NUMBER, k, data_sum, label_sum)
+                    data_train, label_train, data_test, label_test = get_k_fold_data(self.K_NUMBER, k, data_sum,
+                                                                                     label_sum)
                     # 创建i和j类的SVM
                     svm = SVM(data_train, label_train, self.sigma)
                     # 对每一份数据进行训练
@@ -86,6 +91,12 @@ class MultiSVM:
                     if accuracy >= best_accuracy:
                         self.svm[svm_number] = svm
                         self.accuracy[svm_number] = accuracy
+                    if accuracy >= 0.90:
+                        print("the accuracy is ", accuracy)
+                        break
+                    else:
+                        print("the accuracy is ", accuracy)
+                        continue
 
     def decide(self, x):
         """
