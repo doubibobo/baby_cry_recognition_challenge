@@ -1,4 +1,5 @@
 import time
+import torch
 import pickle
 
 from data.code.data_analysis import csv_handle
@@ -12,7 +13,23 @@ CLASSES_NUMBER = 6  # 总共有六种类型的数据
 SIGMA = 10  # 取高斯核的sigma为10
 
 
-def train_processing(data_train, label_train):
+def gpu_setting(use_number):
+    """
+    训练时的GPU设置
+    return: 是否可用GPU的标志
+    """
+    use_gpu = torch.cuda.is_available()
+    gpu_number = torch.cuda.device_count()
+    if use_gpu and use_number < gpu_number:
+        print('*' * 25, "GPU信息展示", '*' * 25)
+        print(torch.cuda.get_device_capability(use_number))
+        print(torch.cuda.get_device_name(use_number))
+        print(torch.cuda.get_device_properties(use_number))
+        torch.cuda.set_device(gpu_number)
+    return use_gpu
+
+
+def train_processing(data_train, label_train, gpu_available):
     """
     k折划分后的训练过程，并且要求使用最好的神经网络
     :param data_train:      数据集
@@ -38,6 +55,7 @@ def train_processing(data_train, label_train):
                 pickle.dump(multi_svm, file)
         print('train_accuracy: %.6f' % accuracy)
         print('*' * 25, '第', m + 1, '折SVM多分类器结束', '*' * 25)
+        break
 
     print('#' * 10, '最终k折交叉验证结果', '#' * 10)
     print('train_accuracy_sum: %.6f' % best_accuracy)
@@ -67,9 +85,11 @@ def test_processing(data_test):
 
 if __name__ == '__main__':
     time_start = time.time()
-    torch_data, torch_label = csv_handle("data.csv")
+    # torch_data, torch_label = csv_handle("data.csv")
+    # 判断GPU是否可用，如果可用，则进行设置
+    # gpu_available = gpu_setting(0)
     # 进行训练
-    train_processing(torch_data, torch_label)
+    # train_processing(torch_data, torch_label, gpu_available)
     # 进行测试集合的验证
     headers = extract_features()
 
