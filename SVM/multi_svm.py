@@ -31,6 +31,21 @@ class MultiSVM:
         self.mapping = []
 
         self.K_NUMBER = k_number
+        # self.gpu_available = gpu_available
+
+    # def gpu_convert(self):
+    #     if self.gpu_available:
+    #         self.classes_number = self.classes_number.cuda()
+    #         self.data = self.data.cuda()
+    #         self.label = self.label.cuda()
+    #         self.sigma = self.sigma.cuda()
+    #         self.svm_number = self.svm_number.cuda()
+    #         self.classes_index = self.classes_index.cuda()
+    #         self.svm = self.svm.cuda()
+    #         self.accuracy = self.accuracy.cuda()
+    #         self.mapping = self.mapping.cuda()
+    #         self.K_NUMBER = self.K_NUMBER.cuda()
+    #         self.gpu_available = self.gpu_available.cuda()
 
     def create_label_index(self):
         """
@@ -62,6 +77,7 @@ class MultiSVM:
         self.create_label_index()
         svm_number = -1
         for i in range(self.classes_number):
+            print("第%d个SVM分类器" % i)
             data_i, label_i = self.create_dataset(i)
             # 将i类的标签设置为正类的1
             label_i = torch.ones(len(label_i))
@@ -88,6 +104,7 @@ class MultiSVM:
                     svm.train()
                     # 进行测试
                     accuracy = svm.test(data_test, label_test)
+                    print("now accuracy is ", accuracy)
                     if accuracy >= best_accuracy:
                         self.svm[svm_number] = svm
                         self.accuracy[svm_number] = accuracy
@@ -106,6 +123,9 @@ class MultiSVM:
         """
         result = [0 for _ in range(self.classes_number)]
         for i in range(self.svm_number):
+            # 删除掉精确度不高的二分类SVM，检查一下准确率
+            if i in (3, 6, 13):
+                continue
             predict_temp = self.svm[i].predict(x)
             # print("this is the %dth svm:" % i)
             # print(predict_temp)

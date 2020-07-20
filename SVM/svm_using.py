@@ -1,4 +1,5 @@
 import time
+import torch
 import pickle
 
 from data.code.data_analysis import csv_handle
@@ -12,7 +13,23 @@ CLASSES_NUMBER = 6  # 总共有六种类型的数据
 SIGMA = 10  # 取高斯核的sigma为10
 
 
-def train_processing(data_train, label_train):
+def gpu_setting(use_number):
+    """
+    训练时的GPU设置
+    return: 是否可用GPU的标志
+    """
+    use_gpu = torch.cuda.is_available()
+    gpu_number = torch.cuda.device_count()
+    if use_gpu and use_number < gpu_number:
+        print('*' * 25, "GPU信息展示", '*' * 25)
+        print(torch.cuda.get_device_capability(use_number))
+        print(torch.cuda.get_device_name(use_number))
+        print(torch.cuda.get_device_properties(use_number))
+        torch.cuda.set_device(gpu_number)
+    return use_gpu
+
+
+def train_processing(data_train, label_train, gpu_available):
     """
     k折划分后的训练过程，并且要求使用最好的神经网络
     :param data_train:      数据集
