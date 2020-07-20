@@ -68,14 +68,14 @@ if __name__ == '__main__':
     # headers = fe.extract_features()
     # fe.write_data_to_csv_file(headers, file_label_indexes, "data.csv", "train")
     # 读取数据
-    # torch_data, torch_label = da.csv_handle("data.csv")
+    torch_data, torch_label = da.csv_handle("data.csv")
     # 进行训练
-    # train_process(torch_data, torch_label)
+    train_process(torch_data, torch_label)
 
     # 进行测试集合的验证
     # test_label_indexes = bf.get_filename("test")
     # fe.extract_spectrogram(test_label_indexes, "test")
     # fe.write_data_to_csv_file(headers, test_label_indexes, "test.csv", "test")
 
-    test_data, _ = da.csv_handle("test.csv")
-    fe.write_result_to_csv("test.csv", "result.csv", test_process(test_data))
+    # test_data, _ = da.csv_handle("test.csv")
+    # fe.write_result_to_csv("test.csv", "result.csv", test_process(test_data))
