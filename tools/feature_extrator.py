@@ -4,9 +4,8 @@ import matplotlib.pyplot as plt
 import csv
 import os
 import pandas as pd
-import torch
 
-import data.code.build_file_index as bf
+import data.code.tools.build_file_index as bf
 
 
 "建立训练时的标签和语音类别的映射关系"
@@ -63,7 +62,7 @@ def extract_features():
     return header.split()
 
 
-def write_data_to_csv_file(header, indexes, filename, selection):
+def write_data_to_csv_file(header, indexes, filename, selection, framing=False):
     """
     Writing data to csv file
     Notation: we must close the file

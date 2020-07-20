@@ -1,7 +1,5 @@
-import data.code.build_file_index as bf
-import data.code.feature_extrator as fe
-import data.code.data_analysis as da
-import data.code.network as net
+import data.code.tools.data_analysis as da
+import data.code.MLP.network as net
 
 import torch
 
@@ -68,7 +66,7 @@ if __name__ == '__main__':
     # headers = fe.extract_features()
     # fe.write_data_to_csv_file(headers, file_label_indexes, "data.csv", "train")
     # 读取数据
-    torch_data, torch_label = da.csv_handle("data.csv")
+    torch_data, torch_label = da.csv_handle("../data/data.csv")
     # 进行训练
     train_process(torch_data, torch_label)
 
