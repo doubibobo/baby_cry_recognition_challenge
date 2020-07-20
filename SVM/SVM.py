@@ -153,7 +153,7 @@ class SVM:
         parameter_changed = 1       # 单次训练中如果参数有改变则增加1
 
         while (iteration_step < self.max_iteration) and parameter_changed > 0:
-            # print('iteration:%d max_iteration:%d' % (iteration_step + 1, self.max_iteration))
+            print('iteration:%d max_iteration:%d' % (iteration_step + 1, self.max_iteration))
             iteration_step += 1
             parameter_changed = 0
 
@@ -235,7 +235,7 @@ class SVM:
         :param x2: 戴判别向量
         :return: 计算结果
         """
-        return np.exp((-1 * (np.linalg.norm(x1 - x2))) / (2 * self.sigma ** 2))
+        return np.exp((-1 * (np.linalg.norm((x1.double() - x2.double())))) / (2 * self.sigma ** 2))
 
     def predict(self, x):
         """
