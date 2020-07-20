@@ -106,6 +106,7 @@ def train(network, data_train, label_train, data_validation, label_validation,
             loss.backward()
             optimizer.step()
         # 得到每个epoch的 loss 和 accuracy
+        print("epoch is ", epoch)
         loss_train.append(log_rmse(False, network, data_train, label_train, loss_function))
         if data_validation is not None:
             loss_validation.append(log_rmse(True, network, data_validation, label_validation, loss_function))
