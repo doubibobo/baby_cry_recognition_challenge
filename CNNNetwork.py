@@ -19,9 +19,9 @@ class CNN(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2)
         )
-        self.conv2 = nn.Sequential(
-            nn.Conv2d(
-                in_channels=16,
-                out_channels=
-            )
-        )
+        # self.conv2 = nn.Sequential(
+        #     nn.Conv2d(
+        #         in_channels=16,
+        #         out_channels=
+        #     )
+        # )
