@@ -12,19 +12,30 @@ class Network(nn.Module):
 
     def __init__(self, input_dim, output_dim):
         super(Network, self).__init__()
-        self.layer1 = nn.Linear(input_dim, 256)
-        self.layer2 = nn.Linear(256, 128)
-        self.layer3 = nn.Linear(128, 64)
-        self.layer4 = nn.Linear(64, output_dim)
+        self.layer1 = nn.Linear(input_dim, 512)
+        self.drop1 = nn.Dropout(0.5)
+        self.layer2 = nn.Linear(512, 256)
+        self.drop2 = nn.Dropout(0.5)
+        self.layer3 = nn.Linear(256, 128)
+        self.drop3 = nn.Dropout(0.5)
+        self.layer4 = nn.Linear(128, 64)
+        self.drop4 = nn.Dropout(0.5)
+        self.layer5 = nn.Linear(64, 32)
+        self.drop5 = nn.Dropout(0.5)
+        self.layer6 = nn.Linear(32, output_dim)
 
     def forward(self, x):
         x = self.layer1(x)
-        x = functional.relu(x)
+        x = functional.relu(self.drop1(x))
         x = self.layer2(x)
-        x = functional.relu(x)
+        x = functional.relu(self.drop2(x))
         x = self.layer3(x)
-        x = functional.relu(x)
+        x = functional.relu(self.drop3(x))
         x = self.layer4(x)
+        x = functional.relu(self.drop4(x))
+        x = self.layer5(x)
+        x = functional.relu(self.drop5(x))
+        x = self.layer6(x)
         x = functional.softmax(x)
         return x
 
@@ -70,7 +81,8 @@ def log_rmse(flag, network, x, y, loss_function):
 
 
 def train(network, data_train, label_train, data_validation, label_validation,
-          learning_rate, epoch_number=30, weight_decay=0.0001, batch_size=32):
+          learning_rate, epoch_number=30, weight_decay=0.000000001, batch_size=512,
+          gpu_available=False):
     """
     神经网络训练过程
     :param network: 构造的神经网络
@@ -82,6 +94,7 @@ def train(network, data_train, label_train, data_validation, label_validation,
     :param learning_rate: 学习率
     :param weight_decay: 在原本损失函数的基础上，加上L2正则化，而weight_decay就是这个正则化的lambda参数，一般设置为1e-8
     :param batch_size: 每组的样本个数，默认为32
+    :param gpu_available: GPU的可用性
     :return:
     """
     # 定义训练集的loss和accuracy为loss_train 测试集的loss和accuracy为loss_validation
@@ -94,12 +107,16 @@ def train(network, data_train, label_train, data_validation, label_validation,
     # 使用cross_entropy损失函数
     loss_function = nn.CrossEntropyLoss()
 
+    if gpu_available:
+        loss_function = loss_function.cuda()
+
     # 使用Adam优化算法
     optimizer = torch.optim.Adam(params=network.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
     # 分批训练
     for epoch in range(epoch_number):
         for X, y in train_iter:
+            X,y = X.cuda(), y.cuda()
             output = network(X)
             loss = loss_function(output, y)
             optimizer.zero_grad()

@@ -20,12 +20,13 @@ def gpu_setting(use_number):
     """
     use_gpu = torch.cuda.is_available()
     gpu_number = torch.cuda.device_count()
+
     if use_gpu and use_number < gpu_number:
         print('*' * 25, "GPU信息展示", '*' * 25)
         print(torch.cuda.get_device_capability(use_number))
         print(torch.cuda.get_device_name(use_number))
         print(torch.cuda.get_device_properties(use_number))
-        torch.cuda.set_device(gpu_number)
+        torch.cuda.set_device(0)
     return use_gpu
 
 
@@ -92,6 +93,6 @@ if __name__ == '__main__':
     # headers = extract_features()
 
     test_data, _ = csv_handle("test_1.csv")
-    write_result_to_csv("test_1.csv", "result.csv", test_processing(test_data))
+    write_result_to_csv("test_1.csv", "result_gpu.csv", test_processing(test_data))
 
     # print('time span: ', time.time() - time_start)

@@ -120,8 +120,8 @@ def write_result_to_csv(data_file, filename, results):
         print(results)
         for i in range(len(results)):
             dictionary[wav_paths[i]] = results[i]
-            # to_append = f'{wav_paths[i]} {classes_labels[results[i].data.numpy()]} '
-            to_append = f'{wav_paths[i]} {classes_labels[results[i]]} '
+            to_append = f'{wav_paths[i]} {classes_labels[results[i].data.numpy()]} '
+            # to_append = f'{wav_paths[i]} {classes_labels[results[i]]} '
             file = open(filename, 'a', newline='')
             with file:
                 writer = csv.writer(file)
