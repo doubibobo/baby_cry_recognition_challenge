@@ -8,20 +8,32 @@ label_classes = {"awake": 0, "diaper": 1, "hug": 2,
                  "hungry": 3, "sleepy": 4, "uncomfortable": 5}
 
 
-def csv_handle(filename):
+def csv_handle(filename, another_file=None):
     """
     处理获取的csv文件，如：删除对训练无用的filename等
     @:arg
         filename: csv的文件路径
+        another_file: 判断是否有第二个csv文件
     @:returns
         torch_data: 数据集
         labels: 标签
     """
+    # 设置初始值
+    file_name_col, frame_number_col = None, None
     data = pd.read_csv(filename)
-    data.head()
-    print(data.shape)
-    # 删除对训练数据无用的列，如文件名
+
+    if another_file is not None:
+        data_another = pd.read_csv(another_file)
+        # 两个csv文件的行列进行首尾拼接
+        data = pd.concat([data, data_another], axis=0)
+        # 提取第一列的文件名
+        file_name_col, frame_number_col = data['filename'], data['frame_number']
+
+    # 删除对训练数据无用的列，文件名只是训练时的标志序号
     data = data.drop(['filename'], axis=1)
+    # 删除对训练数据无用的列，frame_number只是训练时的标志序号
+    if another_file is not None:
+        data = data.drop(['frame_number'], axis=1)
 
     # 对标签进行编码，用iloc函数提取最后一列[:, -1]，如果是取除最后一列以外的所有列[:, :-1]
     type_list = data.iloc[:, -1]
@@ -34,7 +46,10 @@ def csv_handle(filename):
     torch_data -= x_mean
     torch_data /= x_standard
 
-    return torch_data, torch.from_numpy(numpy.array(labels))
+    if another_file is not None:
+        return torch_data, torch.from_numpy(numpy.array(labels)), file_name_col, frame_number_col
+    else:
+        return torch_data, torch.from_numpy(numpy.array(labels))
 
 
 def get_k_fold_data(k, number, data, label):
@@ -49,13 +64,13 @@ def get_k_fold_data(k, number, data, label):
     :returns
     """
     assert k > 1
-    fold_size = data.shape[0] // k      # 确定每一折的个数
+    fold_size = data.shape[0] // k  # 确定每一折的个数
     list_index = [i for i in range(data.shape[0])]
     random.shuffle(list_index)
 
     data_train, label_train, data_validation, label_validation = None, None, None, None
     for i in range(k):
-        index = slice(i * fold_size, (i + 1) * fold_size)                           # valid的索引
+        index = slice(i * fold_size, (i + 1) * fold_size)  # valid的索引
         data_part, label_part = data[list_index[index], :], label[list_index[index]]
         if i == number:
             data_validation, label_validation = data_part, label_part

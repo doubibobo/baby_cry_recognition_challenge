@@ -1,12 +1,10 @@
-import time
 import torch
 import pickle
 
-from data.code.data_analysis import csv_handle
-from data.code.data_analysis import get_k_fold_data
+from data.code.tools.data_analysis import csv_handle
+from data.code.tools.data_analysis import get_k_fold_data
 from data.code.SVM.multi_svm import MultiSVM
-from data.code.feature_extrator import write_result_to_csv
-from data.code.feature_extrator import extract_features
+from data.code.tools.feature_extrator import write_result_to_csv
 
 K_NUMBER = 10  # 进行10折交叉验证
 CLASSES_NUMBER = 6  # 总共有六种类型的数据
@@ -51,7 +49,7 @@ def train_processing(data_train, label_train, gpu_available):
         if accuracy >= best_accuracy:
             best_accuracy = accuracy
             # torch.save(multi_svm, 'multi_svm.pkl')
-            pkl_filename = "multi_svm.pkl"
+            pkl_filename = "models/multi_svm.pkl"
             with open(pkl_filename, 'wb') as file:
                 pickle.dump(multi_svm, file)
         print('train_accuracy: %.6f' % accuracy)
@@ -69,7 +67,7 @@ def test_processing(data_test):
     :return: 无返回值
     """
     # prediction = torch.load('multi_svm.pkl')(data_test.float())
-    pk_filename = "multi_svm_1.pkl"
+    pk_filename = "models/multi_svm_1.pkl"
     with open(pk_filename, 'rb') as file:
         pickle_model = pickle.load(file)
     prediction = []
@@ -94,5 +92,4 @@ if __name__ == '__main__':
 
     test_data, _ = csv_handle("test_1.csv")
     write_result_to_csv("test_1.csv", "result_gpu.csv", test_processing(test_data))
-
     # print('time span: ', time.time() - time_start)
