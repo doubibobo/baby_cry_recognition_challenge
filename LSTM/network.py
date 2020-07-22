@@ -38,6 +38,7 @@ class LSTMClassify(nn.Module):
 
         # output的数据格式为：(batch, num_directions * hidden_size)
         # 这里选取最后一个时间节点的rnn_output输出，也就是h_n
-        output = self.layer1(rnn_output[:, -1, :])
+        # 在实践中发现，最后一个时间节点大多为补充帧，对模型的分类效果可能较差，这里选取倒数第二个时间节点数据
+        output = self.layer1(rnn_output[:, -2, :])
         output = functional.softmax(output)
         return output

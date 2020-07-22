@@ -69,6 +69,7 @@ def framing(signal, sample_rate, frame_window, shift_window, signal_window):
     # 对不足一帧的语音进行填充
     padding_signal_length = np.append(signal, np.zeros((frame_numbers * step_length + frame_length - signal_length)))
     # 计算每一个数据帧的索引
+    # TODO 此处应该改为舍弃，因为数据集中大量样本的最后一帧都是补充帧，对分类效果影响较大
     indexes = np.tile(np.arange(0, frame_length), (frame_numbers, 1)) + np.tile(
         np.arange(0, frame_numbers * step_length, step_length), (frame_length, 1)).T
     return padding_signal_length[indexes.astype(np.int32, copy=False)]
