@@ -13,7 +13,7 @@ from data.code.tools.network_tools import train_process as tp
 K = 10
 EPOCH_NUMBER = 1000
 LEARNING_RATE = 0.001
-BATCH_SIZE = 512
+BATCH_SIZE = 1
 TIME_STEP = 1502
 INPUT_SIZE = 26
 HIDDEN_SIZE = 64
@@ -51,6 +51,7 @@ if __name__ == '__main__':
                                                                   "../data/data_for_rnn.csv")
     torch_data = torch.reshape(torch_data, (-1, TIME_STEP, INPUT_SIZE))
     torch_label = torch_label[0:len(torch_label):TIME_STEP]
+    print(torch_data.shape)
     # 构建LSTM网络
     network = net.LSTMClassify(INPUT_SIZE, HIDDEN_SIZE, 1, OUTPUT_SIZE)
     # 训练网络
@@ -58,4 +59,5 @@ if __name__ == '__main__':
                      network_filename=FILE_NAME)
     # 进行测试集合的验证
     test_data, _ = da.csv_handle("test.csv")
+    test_data = torch.reshape(test_data, (-1, TIME_STEP, INPUT_SIZE))
     fe.write_result_to_csv("test.csv", "result.csv", tp.test_process(test_data, FILE_NAME))
