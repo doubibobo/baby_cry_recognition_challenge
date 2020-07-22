@@ -1,8 +1,5 @@
 import torch
 
-from data.code.tools.feature_extrator import write_data_to_csv_file
-from data.code.tools.data_analysis import csv_handle
-
 from data.code.LSTM import network as net
 from data.code.tools import build_file_index as bf
 from data.code.tools import data_analysis as da
@@ -22,33 +19,33 @@ FILE_NAME = "LSTM_network.pkl"
 
 
 if __name__ == '__main__':
-    # # 建立文件路径与标签的索引
-    # file_label_indexes = bf.get_filename("train")
-    # print(file_label_indexes)
-    #
-    # tool_dictionary = file_label_indexes.copy()
-    #
-    # # 重新整合一边file_label_indexes，因为有不足15秒的数据导致程序异常
-    # for key, value in file_label_indexes.items():
-    #     if key != "hug_1.wav":
-    #         tool_dictionary.pop(key)
-    #         continue
-    #     else:
-    #         break
-    #
-    # print(tool_dictionary)
-    #
-    # # 进行训练集的特征提取，并将其写入csv文件中。
-    # headers = fe.extract_features(to_frame=True)
-    # write_data_to_csv_file(headers, tool_dictionary, "../data/data_for_rnn.csv", "train", to_frame=True)
-    #
-    # # 进行测试集的特征提取，并将其写入csv文件中。
-    # test_label_indexes = bf.get_filename("test")
-    # write_data_to_csv_file(headers, test_label_indexes, "../data/test_for_rnn.csv", "test", to_frame=True)
+    # 建立文件路径与标签的索引
+    file_label_indexes = bf.get_filename("train")
+    print(file_label_indexes)
+
+    tool_dictionary = file_label_indexes.copy()
+
+    # 重新整合一边file_label_indexes，因为有不足15秒的数据导致程序异常
+    for key, value in file_label_indexes.items():
+        if key != "hug_1.wav":
+            tool_dictionary.pop(key)
+            continue
+        else:
+            break
+
+    print(tool_dictionary)
+
+    # 进行训练集的特征提取，并将其写入csv文件中。
+    headers = fe.extract_features(to_frame=True)
+    fe.write_data_to_csv_file(headers, tool_dictionary, "../data/data_for_rnn.csv", "train", to_frame=True)
+
+    # 进行测试集的特征提取，并将其写入csv文件中。
+    test_label_indexes = bf.get_filename("test")
+    fe.write_data_to_csv_file(headers, test_label_indexes, "../data/test_for_rnn.csv", "test", to_frame=True)
 
     # 读取数据，并进行数据的重塑
-    torch_data, torch_label, file_name, frame_number = csv_handle("../data/data_for_rnn_1.csv",
-                                                                  "../data/data_for_rnn.csv")
+    torch_data, torch_label, file_name, frame_number = da.csv_handle("../data/data_for_rnn_1.csv",
+                                                                     "../data/data_for_rnn.csv")
     torch_data = torch.reshape(torch_data, (-1, TIME_STEP, INPUT_SIZE))
     torch_label = torch_label[0:len(torch_label):TIME_STEP]
     print(torch_data.shape)
