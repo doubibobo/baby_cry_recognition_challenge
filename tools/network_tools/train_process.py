@@ -3,8 +3,9 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 
-from data.code.tools.network_tools import base_class as bc
 from data.code.tools import data_analysis as da
+from data.code.tools import mix_up as mu
+from data.code.tools.network_tools import base_class as bc
 from data.code.tools.network_tools.log_rmse import log_rmse
 
 
@@ -35,12 +36,21 @@ def train(network, dataset, data_validation, label_validation, learning_rate,
 
     # 分批训练
     for epoch in range(epoch_number):
-        for X, y in train_iter:
-            output = network(X)
-            loss = loss_function(output, y)
+        for batch_index, (inputs, targets) in enumerate(train_iter):
+            inputs, targets_a, targets_b, lam = mu.mix_data(inputs, targets, 2)
+            outputs = network(inputs)
+            loss_func = mu.mix_criterion(targets_a, targets_b, lam)
+            loss = loss_func(loss_function, outputs)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+
+        # for X, y in train_iter:
+        #     output = network(X)
+        #     loss = loss_function(output, y)
+        #     optimizer.zero_grad()
+        #     loss.backward()
+        #     optimizer.step()
         # 得到每个epoch的 loss 和 accuracy
         print("epoch is ", epoch)
         loss_train.append(log_rmse(False, network, dataset.x_data, dataset.y_data, loss_function))
