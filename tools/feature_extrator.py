@@ -47,6 +47,24 @@ def extract_spectrogram(indexes, selection):
         plt.clf()
 
 
+def signal_append(signal, sample_rate, signal_window):
+    """
+    补充语音信号
+    :param signal: 信号值
+    :param sample_rate: 采样率
+    :param signal_window: 信号长度
+    :return: 信号补充之后的结果
+    """
+    # 整段语音中包含的样本数目
+    signal_length = int(round(signal_window * sample_rate))
+    # 对不足signal_window长度的语音数据进行填充
+    if len(signal) < signal_length:
+        signal = np.append(signal, np.zeros(signal_length - len(signal)))
+    else:
+        pass
+    return signal
+
+
 def framing(signal, sample_rate, frame_window, shift_window, signal_window):
     """
     进行语音的分帧操作
@@ -64,8 +82,7 @@ def framing(signal, sample_rate, frame_window, shift_window, signal_window):
     # 计算一段语音中包含的帧数
     frame_numbers = int(np.ceil(float(np.abs(signal_length - frame_length)) / step_length))
     # 对不足signal_window长度的语音数据进行填充
-    if len(signal) < signal_length:
-        signal = np.append(signal, np.zeros(signal_length - len(signal)))
+    signal = signal_append(signal, sample_rate, signal_window)
     # 对不足一帧的语音进行填充
     padding_signal_length = np.append(signal, np.zeros((frame_numbers * step_length + frame_length - signal_length)))
     # 计算每一个数据帧的索引
