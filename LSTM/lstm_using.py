@@ -15,7 +15,7 @@ TIME_STEP = 1502
 INPUT_SIZE = 26
 HIDDEN_SIZE = 64
 OUTPUT_SIZE = 6
-FILE_NAME = "LSTM_network.pkl"
+FILE_NAME = "LSTM_network_02.pkl"
 
 
 if __name__ == '__main__':
@@ -43,17 +43,17 @@ if __name__ == '__main__':
     # test_label_indexes = bf.get_filename("test")
     # fe.write_data_to_csv_file(headers, test_label_indexes, "../data/test_for_rnn.csv", "test", to_frame=True)
 
-    # 读取数据，并进行数据的重塑
-    torch_data, torch_label, file_name, frame_number = da.csv_handle("../data/data_for_rnn_1.csv",
-                                                                     "../data/data_for_rnn.csv")
-    torch_data = torch.reshape(torch_data, (-1, TIME_STEP, INPUT_SIZE))
-    torch_label = torch_label[0:len(torch_label):TIME_STEP]
-    print(torch_data.shape)
-    # 构建LSTM网络
-    network = net.LSTMClassify(INPUT_SIZE, HIDDEN_SIZE, 1, OUTPUT_SIZE)
-    # 训练网络
-    tp.train_process(torch_data, torch_label, network, K, LEARNING_RATE, EPOCH_NUMBER, BATCH_SIZE,
-                     network_filename=FILE_NAME)
+    # # 读取数据，并进行数据的重塑
+    # torch_data, torch_label, file_name, frame_number = da.csv_handle("../data/data_for_rnn_1.csv",
+    #                                                                  "../data/data_for_rnn.csv")
+    # torch_data = torch.reshape(torch_data, (-1, TIME_STEP, INPUT_SIZE))
+    # torch_label = torch_label[0:len(torch_label):TIME_STEP]
+    # print(torch_data.shape)
+    # # 构建LSTM网络
+    # network = net.LSTMClassify(INPUT_SIZE, HIDDEN_SIZE, 1, OUTPUT_SIZE)
+    # # 训练网络
+    # tp.train_process(torch_data, torch_label, network, K, LEARNING_RATE, EPOCH_NUMBER, BATCH_SIZE,
+    #                  network_filename=FILE_NAME)
     # 进行测试集合的验证
     test_data, _ = da.csv_handle("test.csv")
     test_data = torch.reshape(test_data, (-1, TIME_STEP, INPUT_SIZE))

@@ -24,6 +24,7 @@ class LSTMClassify(nn.Module):
         )
         # 池化层
         # self.pooling1 = nn.MaxPool1d(3, stride=2)
+        # TODO 后期需要考虑加入CNN，以提升训练结果
         # 输出层
         self.layer1 = nn.Linear(hidden_dim, class_number)
 
@@ -37,8 +38,8 @@ class LSTMClassify(nn.Module):
         rnn_output, (_, _) = self.rnn(x, None)
 
         # output的数据格式为：(batch, num_directions * hidden_size)
-        # 这里选取最后一个时间节点的rnn_output输出，也就是h_n
-        # 在实践中发现，最后一个时间节点大多为补充帧，对模型的分类效果可能较差，这里选取倒数第二个时间节点数据
+        # 这里选取最后一个时间节点的rnn_output输出，也就是h_n，
+        # 在实践中发现，最后一个时间节点大多为补充帧，对模型的分类效果可能较差，这里选取倒数第二个时间节点数据。
         output = self.layer1(rnn_output[:, -2, :])
         output = functional.softmax(output)
         return output
