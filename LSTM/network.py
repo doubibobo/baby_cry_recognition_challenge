@@ -1,3 +1,4 @@
+import torch
 from torch import nn
 from torch.nn import functional
 
@@ -22,10 +23,19 @@ class LSTMClassify(nn.Module):
             num_layers=layer_number,
             batch_first=True
         )
-        # 池化层
-        # self.pooling1 = nn.MaxPool1d(3, stride=2)
-        # 输出层
-        self.layer1 = nn.Linear(hidden_dim, class_number)
+        # # 卷积层
+        # self.conv1 = nn.Conv2d(in_channels=1, out_channels=8, kernel_size=5)
+        # self.conv2 = nn.Conv2d(in_channels=8, out_channels=16, kernel_size=5)
+        # # 池化层
+        # self.pooling1 = nn.MaxPool2d(kernel_size=2, stride=2)
+        # self.pooling2 = nn.MaxPool2d(kernel_size=2, stride=2)
+        # 全连接层
+        self.fc1 = nn.Linear(hidden_dim * 1502, 256)
+        self.fc2 = nn.Linear(256, 128)
+        self.fc3 = nn.Linear(128, 64)
+        self.fc4 = nn.Linear(64, class_number)
+        # # 输出层(不加CNN层的做法)
+        # self.layer1 = nn.Linear(hidden_dim, class_number)
 
     def forward(self, x):
         """
@@ -35,9 +45,24 @@ class LSTMClassify(nn.Module):
         """
         # rnn_output的数据格式为： (batch, seq_len, num_directions * hidden_size)
         rnn_output, (_, _) = self.rnn(x, None)
+        # rnn_output = torch.reshape(rnn_output, (512, 1, 1502, 64))
+        #
+        # output = self.conv1(rnn_output)
+        # output = self.pooling1(functional.relu(output))
+        # output = self.conv2(output)
+        # output = self.pooling2(functional.relu(output))
+        # print(output.shape)
+        # print(rnn_output.shape)
+        rnn_output = torch.reshape(rnn_output, (len(rnn_output[:, 0, 0]), 1502 * 64))
+        # output = functional.relu(self.fc1(rnn_output[:, -2, :]))
+        output = functional.relu(self.fc1(rnn_output))
+        output = functional.relu(self.fc2(output))
+        output = functional.relu(self.fc3(output))
+        output = functional.softmax(self.fc4(output))
 
+        # 不加CNN层的做法
         # output的数据格式为：(batch, num_directions * hidden_size)
         # 这里选取最后一个时间节点的rnn_output输出，也就是h_n
-        output = self.layer1(rnn_output[:, -1, :])
-        output = functional.softmax(output)
+        # output = self.layer1(rnn_output[:, -2, :])
+        # output = functional.softmax(output)
         return output

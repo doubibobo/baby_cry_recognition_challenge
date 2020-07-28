@@ -140,12 +140,13 @@ def write_data_to_csv_file(header, indexes, filename, selection, to_frame=False)
                     file.close()
 
 
-def write_result_to_csv(data_file, filename, results):
+def write_result_to_csv(data_file, filename, results, time_step=None):
     """
     输出测试集合的结果到csv
     :param filename: 文件名称
     :param data_file: 测试集
     :param results: 识别结果
+    :param time_step: 测试语音文件是否分帧（每一个语音文件含有的时间步），默认为None，不分帧。
     :return:
     """
     file = open(filename, 'w', newline='')
@@ -156,7 +157,8 @@ def write_result_to_csv(data_file, filename, results):
         data = pd.read_csv(data_file)
         wav_paths = data.iloc[:, [0]].T
         wav_paths = np.matrix.tolist(wav_paths)[0]
-
+        if time_step is not None:
+            wav_paths = wav_paths[0:len(wav_paths):time_step]
         print(wav_paths)
 
         dictionary = {}

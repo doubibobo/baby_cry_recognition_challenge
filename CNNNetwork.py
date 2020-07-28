@@ -25,3 +25,5 @@ class CNN(nn.Module):
         #         out_channels=
         #     )
         # )
+if __name__ == '__main__':
+    print("Hello, world!")

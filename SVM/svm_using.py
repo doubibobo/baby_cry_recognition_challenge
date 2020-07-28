@@ -4,7 +4,7 @@ import pickle
 from data.code.tools.data_analysis import csv_handle
 from data.code.tools.data_analysis import get_k_fold_data
 from data.code.SVM.multi_svm import MultiSVM
-from data.code.tools.feature_extrator import write_result_to_csv
+from data.code.tools.feature_extractor import write_result_to_csv
 
 K_NUMBER = 10  # 进行10折交叉验证
 CLASSES_NUMBER = 6  # 总共有六种类型的数据
