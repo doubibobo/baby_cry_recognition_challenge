@@ -22,6 +22,16 @@ class LSTMClassify(nn.Module):
             num_layers=layer_number,
             batch_first=True
         )
+
+        # nn.LSTMCell
+        # self.rnn_block = nn.Sequential(
+        #     nn.LSTM(
+        #         input_size=feature_dim,
+        #         hidden_size=hidden_dim,
+        #         num_layers=layer_number,
+        #         batch_first=True
+        #     )
+        # )
         # 池化层
         # self.pooling1 = nn.MaxPool1d(3, stride=2)
         # TODO 后期需要考虑加入CNN，以提升训练结果
