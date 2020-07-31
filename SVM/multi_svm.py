@@ -108,7 +108,7 @@ class MultiSVM:
                     if accuracy >= best_accuracy:
                         self.svm[svm_number] = svm
                         self.accuracy[svm_number] = accuracy
-                    if accuracy >= 0.90:
+                    if accuracy >= 0.80:
                         print("the accuracy is ", accuracy)
                         break
                     else:

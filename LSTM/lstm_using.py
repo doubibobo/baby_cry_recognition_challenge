@@ -1,7 +1,6 @@
 import numpy
 import torch
 import torch.cuda as cuda
-
 from data.code.LSTM import network as net
 from data.code.tools import data_analysis as da
 from data.code.tools import feature_extractor as fe
@@ -12,9 +11,9 @@ from data.code.cuda import cuda_setting as cs
 
 # 定义超参数
 K = 10
-EPOCH_NUMBER = 10000
+EPOCH_NUMBER = 1000
 LEARNING_RATE = 0.001
-BATCH_SIZE = 512
+BATCH_SIZE = 32
 TIME_STEP = 1502
 INPUT_SIZE = 26
 HIDDEN_SIZE = 64

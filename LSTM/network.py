@@ -21,6 +21,7 @@ class LSTMClassify(nn.Module):
             input_size=feature_dim,
             hidden_size=hidden_dim,
             num_layers=layer_number,
+            bidirectional=True,
             batch_first=True
         )
         # # 卷积层
@@ -30,7 +31,7 @@ class LSTMClassify(nn.Module):
         # self.pooling1 = nn.MaxPool2d(kernel_size=2, stride=2)
         # self.pooling2 = nn.MaxPool2d(kernel_size=2, stride=2)
         # 全连接层
-        self.fc1 = nn.Linear(hidden_dim * 1502, 256)
+        self.fc1 = nn.Linear(hidden_dim * 2, 256)
         self.fc2 = nn.Linear(256, 128)
         self.fc3 = nn.Linear(128, 64)
         self.fc4 = nn.Linear(64, class_number)
@@ -53,9 +54,9 @@ class LSTMClassify(nn.Module):
         # output = self.pooling2(functional.relu(output))
         # print(output.shape)
         # print(rnn_output.shape)
-        rnn_output = torch.reshape(rnn_output, (len(rnn_output[:, 0, 0]), 1502 * 64))
+        # rnn_output = torch.reshape(rnn_output, (len(rnn_output[:, 0, 0]), 1502 * 64))
         # output = functional.relu(self.fc1(rnn_output[:, -2, :]))
-        output = functional.relu(self.fc1(rnn_output))
+        output = functional.relu(self.fc1(rnn_output[:, -2, :]))
         output = functional.relu(self.fc2(output))
         output = functional.relu(self.fc3(output))
         output = functional.softmax(self.fc4(output))

@@ -48,13 +48,14 @@ def train(network, data_train, label_train, data_validation, label_validation, l
 
     # 使用Adam优化算法
     optimizer = torch.optim.Adam(params=network.parameters(), lr=learning_rate, weight_decay=weight_decay)
-
+    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=200, gamma=0.1)
     # 使用GPU
     if gpu_available:
         loss_function = loss_function.cuda()
 
     # 分批训练
     for epoch in range(epoch_number):
+        # scheduler.step(epoch)
         for batch_index, (inputs, targets) in enumerate(train_iter):
             if gpu_available:
                 inputs, targets = inputs.cuda(), targets.cuda()
@@ -72,8 +73,9 @@ def train(network, data_train, label_train, data_validation, label_validation, l
         #     loss.backward()
         #     optimizer.step()
         # 得到每个epoch的 loss 和 accuracy
-        # print("epoch is ", epoch)
+        print("epoch is ", epoch)
         loss_train.append(log_rmse.log_rmse(False, network, dataset.x_data, dataset.y_data, loss_function))
+        # print(loss_train[-1])
         if data_validation is not None:
             loss_validation.append(log_rmse.log_rmse(True, network, data_validation, label_validation, loss_function))
     del data_train, label_train, data_validation, label_validation
@@ -107,7 +109,7 @@ def train_process(data_train_input, label_train_input, network, k_number, learni
         # 对每一份数据及神经网络进行训练
         loss_train, loss_validation = train(network[i], data_train, label_train, data_validation,
                                             label_validation, learning_rate, epoch_number, weight_decay, batch_size,
-                                            gpu_available, 4)
+                                            gpu_available, 2)
 
         # 输出这一批数据的最终训练结果
         print('*' * 25, '第', i + 1, '折结束', '*' * 25)

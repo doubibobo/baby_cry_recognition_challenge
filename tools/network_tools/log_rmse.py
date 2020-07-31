@@ -12,6 +12,7 @@ def log_rmse(flag, network, x, y, loss_function):
     :return: 计算值
     """
     if flag:
+        # Sets the module in evaluation mode.
         network.eval()
     output = network(x)
     result = torch.max(output, 1)[1].view(y.size())  # 只返回最大值的每个索引
@@ -19,6 +20,7 @@ def log_rmse(flag, network, x, y, loss_function):
 
     accuracy = corrects * 100 / len(y)
     loss = loss_function(output, y)
+    # Sets the module in training mode.
     network.train()
 
     return loss.data.item(), accuracy

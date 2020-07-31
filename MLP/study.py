@@ -8,12 +8,12 @@ from data.code.tools import feature_extractor as fe
 from data.code.tools.network_tools import train_process as tp
 
 K = 10                      # 进行10折交叉验证
-EPOCH_NUMBER = 10000        # 循环迭代次数为20
-LEARNING_RATE = 0.001       # 学习率
+EPOCH_NUMBER = 100000        # 循环迭代次数为20
+LEARNING_RATE = 1e-5       # 学习率
 BATCH_SIZE = 512
-INPUT_SIZE = 26
+INPUT_SIZE = 38
 OUTPUT_SIZE = 6
-FILE_NAME = "MLP_network.pkl"
+FILE_NAME = "MLP_network_38_02.pkl"
 
 
 if __name__ == '__main__':
@@ -35,20 +35,20 @@ if __name__ == '__main__':
     if gpu_available:
         print("device_number is ", 1)
         cuda.set_device(1)
-
-    # 读取数据
-    torch_data, torch_label = da.csv_handle("../data/data.csv")
-    # 构造神经网络
-    network = [net.Network(INPUT_SIZE, OUTPUT_SIZE) for _ in range(K)]
-    print(network[0])
-    # 进行训练
-    tp.train_process(torch_data, torch_label, network, K, LEARNING_RATE, EPOCH_NUMBER, BATCH_SIZE,
-                     network_filename=FILE_NAME, gpu_available=gpu_available)
-
-    # 进行测试集合的验证
+    #
+    # # 读取数据
+    # torch_data, torch_label = da.csv_handle("../data/data_extend.csv")
+    # # 构造神经网络
+    # network = [net.Network(INPUT_SIZE, OUTPUT_SIZE) for _ in range(K)]
+    # print(network[0])
+    # # 进行训练
+    # tp.train_process(torch_data, torch_label, network, K, LEARNING_RATE, EPOCH_NUMBER, BATCH_SIZE,
+    #                  network_filename=FILE_NAME, gpu_available=gpu_available)
+    # #
+    # # 进行测试集合的验证
     # test_label_indexes = bf.get_filename("test")
     # fe.extract_spectrogram(test_label_indexes, "test")
     # fe.write_data_to_csv_file(headers, test_label_indexes, "test.csv", "test")
-    #
-    # test_data, _ = da.csv_handle("../data/test.csv")
-    # fe.write_result_to_csv("../data/test.csv", "models/result-02.csv", tp.test_process(test_data, FILE_NAME, gpu_available))
+
+    test_data, _ = da.csv_handle("../data/test_extend.csv")
+    fe.write_result_to_csv("../data/test_extend.csv", "models/result-06.csv", tp.test_process(test_data, FILE_NAME, gpu_available))
