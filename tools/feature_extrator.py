@@ -127,8 +127,8 @@ def extract_features(to_frame=False):
     header = 'filename chroma_stft rms spectral_centroid spectral_bandwidth rolloff zero_crossing_rate'
     for i in range(1, 21):
         header += f' mfcc{i}'
-    for i in range(1, 21):
-        header += f' delta{i}'
+    # for i in range(1, 21):
+    #     header += f' delta{i}'
     for i in range(1, 13):
         header += f' cqt{i}'
     header += ' label'
@@ -169,13 +169,13 @@ def write_data_to_csv_file(header, indexes, filename, selection, to_frame=False)
                 zcr = librosa.feature.zero_crossing_rate(y=frames[i])
                 mfcc = librosa.feature.mfcc(y=frames[i], sr=sample_rate)
                 cqt = librosa.feature.chroma_cqt(y=frames[i], sr=sample_rate)
-                deltas = librosa.feature.delta(mfcc)
+                # deltas = librosa.feature.delta(mfcc)
                 to_append = f'{(key if selection == "train" else os.path.split(key)[1])} {np.mean(chroma_stft)} ' \
                             f'{np.mean(rms)} {np.mean(spec_cent)} {np.mean(spec_bw)} {np.mean(rolloff)} {np.mean(zcr)} '
                 for e in mfcc:
                     to_append += f' {np.mean(e)}'
-                for e in deltas:
-                    to_append += f' {np.mean(e)}'
+                # for e in deltas:
+                #     to_append += f' {np.mean(e)}'
                 for e in cqt:
                     to_append += f' {np.mean(e)}'
                 to_append += f' {value}'
