@@ -8,6 +8,7 @@ from data.code.tools import feature_extractor as fe
 import torch.cuda as cuda
 import torch.nn as nn
 
+
 import numpy
 import torch
 import os
@@ -118,6 +119,7 @@ if __name__ == '__main__':
 
     # 开始训练
     n_epochs = 100
+
     for epoch in range(n_epochs):
         since = time.time()
         print("Epoch{}/{}".format(epoch, n_epochs))
@@ -157,6 +159,7 @@ if __name__ == '__main__':
             epoch_correct = 100 * running_correct / len(data_image[param])
 
             print("{}  Loss:{:.4f},  Correct:{:.4f} ".format(param, epoch_loss, epoch_correct))
+
         now_time = time.time() - since
         print("Training time is:{:.0f}m {:.0f}s".format(now_time // 60, now_time % 60))
 

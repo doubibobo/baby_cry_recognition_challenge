@@ -22,12 +22,12 @@ FILE_NAME = "model/LSTM_network_04.pkl"
 
 
 if __name__ == '__main__':
-    # # 建立文件路径与标签的索引
-    # file_label_indexes = bf.get_filename("train")
-    # print(file_label_indexes)
-    #
-    # tool_dictionary = file_label_indexes.copy()
-    #
+    # 建立文件路径与标签的索引
+    file_label_indexes = bf.get_filename("train")
+    print(file_label_indexes)
+
+    tool_dictionary = file_label_indexes.copy()
+
     # # 重新整合一边file_label_indexes，因为有不足15秒的数据导致程序异常
     # for key, value in file_label_indexes.items():
     #     if key != "hug_1.wav":
@@ -35,16 +35,16 @@ if __name__ == '__main__':
     #         continue
     #     else:
     #         break
-    #
-    # print(tool_dictionary)
-    #
-    # # 进行训练集的特征提取，并将其写入csv文件中。
-    # headers = fe.extract_features(to_frame=True)
-    # fe.write_data_to_csv_file(headers, tool_dictionary, "../data/data_for_rnn.csv", "train", to_frame=True)
-    #
-    # # 进行测试集的特征提取，并将其写入csv文件中。
-    # test_label_indexes = bf.get_filename("test")
-    # fe.write_data_to_csv_file(headers, test_label_indexes, "../data/test_for_rnn.csv", "test", to_frame=True)
+
+    print(tool_dictionary)
+
+    # 进行训练集的特征提取，并将其写入csv文件中。
+    headers = fe.extract_features(to_frame=True)
+    fe.write_data_to_csv_file(headers, tool_dictionary, "../data/data_for_rnn_extend.csv", "train", to_frame=True)
+
+    # 进行测试集的特征提取，并将其写入csv文件中。
+    test_label_indexes = bf.get_filename("test")
+    fe.write_data_to_csv_file(headers, test_label_indexes, "../data/test_for_rnn_extend.csv", "test", to_frame=True)
 
     # 查看GPU相关信息
     gpu_available = cuda.is_available()

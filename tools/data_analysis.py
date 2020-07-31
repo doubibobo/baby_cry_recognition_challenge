@@ -90,3 +90,20 @@ def get_k_fold_data(k, number, data, label):
             data_train = torch.cat((data_train, data_part), dim=0)
             label_train = torch.cat((label_train, label_part), dim=0)
     return data_train.float(), label_train, data_validation.float(), label_validation
+
+
+def split_train_test(data, label):
+    """
+    按照7:3的比例划分训练集和测试集
+    :param data: 原始数据, list
+    :param label: 原始数据的标签, list
+    :return: 训练集/训练集标签/测试集/测试集标签
+    """
+    list_index = [i for i in range(len(data))]
+    boarder = int(0.7 * len(data))
+    random.shuffle(list_index)
+
+    data, label = numpy.mat(data).T, numpy.mat(label).T
+    data_train, data_test = data[list_index[0: boarder], :].T, data[list_index[boarder: len(data)], :].T
+    label_train, label_test = label[list_index[0: boarder], :].T, label[list_index[boarder: len(label)], :].T
+    return data_train.tolist()[0], label_train.tolist()[0], data_test.tolist()[0], label_test.tolist()[0]

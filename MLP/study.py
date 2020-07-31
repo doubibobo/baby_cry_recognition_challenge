@@ -8,12 +8,13 @@ from data.code.tools import feature_extractor as fe
 from data.code.tools.network_tools import train_process as tp
 
 K = 10                      # 进行10折交叉验证
-EPOCH_NUMBER = 100000        # 循环迭代次数为20
-LEARNING_RATE = 1e-5       # 学习率
-BATCH_SIZE = 512
+EPOCH_NUMBER = 1000         # 循环迭代次数为20
+LEARNING_RATE = 0.001        # 学习率
+WEIGHT_DELAY = 0
+BATCH_SIZE = 32
 INPUT_SIZE = 38
 OUTPUT_SIZE = 6
-FILE_NAME = "MLP_network_38_02.pkl"
+FILE_NAME = "MLP_network_bs_32_epoch_1000_lr_small_01.pkl"
 
 
 if __name__ == '__main__':
