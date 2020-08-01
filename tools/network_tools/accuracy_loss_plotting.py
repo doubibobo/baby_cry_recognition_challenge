@@ -23,4 +23,4 @@ def accuracy_loss_plotting(loss_accuracy, epoch, k_number, train=True):
     plt.xlabel(("train" if train else "test") + ' accuracy vs. epochs')
     plt.ylabel(("train" if train else "test") + ' accuracy')
     plt.savefig("images/" + ("train" if train else "test") + "/accuracy_loss_" + str(k_number) + ".jpg")
-    # plt.show()
+    plt.show()
