@@ -31,22 +31,27 @@ def mix_up_signal(signal_1, signal_2, label_1, label_2, index=2):
     return new_signal, new_signal_label
 
 
-def mix_data(data, label, alpha_value=10):
+def mix_data(data, label, alpha_value=10, gpu_available=False):
     """
     创建新的数据集，以一个batch_size为单位
     :param data: 数据集
     :param label: 标签
     :param alpha_value: 取的alpha的值，默认为1,选择alpha为0.2
+    :param gpu_available: 是否使用GPU
     :return:
     """
     if alpha_value > 0:
         lam = numpy.random.beta(alpha[alpha_value], alpha[alpha_value])
     else:
         lam = 1.
+    # print(lam)
     # 计算一个batch_size的长度
     batch_size = data.size()[0]
     # 生成一个无序序列
-    index = torch.randperm(batch_size)
+    if gpu_available:
+        index = torch.randperm(batch_size).cuda()
+    else:
+        index = torch.randperm(batch_size)
     mixed_data = lam * data + (1 - lam) * data[index, :]
     label_a, label_b = label, label[index]
     return mixed_data, label_a, label_b, lam
@@ -60,5 +65,5 @@ def mix_criterion(label_a, label_b, lam):
     :param lam: lam的值（lam, 1 - lam）
     :return: 匿名函数
     """
-    return lambda criterion, prediction: lam * criterion(prediction, label_a) + \
-                                         (1 - lam) * criterion(prediction, label_b)
+    return lambda criterion, prediction: \
+        lam * criterion(prediction, label_a) + (1 - lam) * criterion(prediction, label_b)

@@ -61,16 +61,21 @@ class LSTMClassify(nn.Module):
     构建LSTM神经网络，用于encoder和decoder问题（即序列问题）
     """
 
-    def __init__(self, feature_dim, hidden_dim, layer_number):
+    def __init__(self, feature_dim, hidden_dim, layer_number, output_size=None):
         """
         LSTM网络初始化方法
         :param feature_dim: 某一时刻的输入特征维度
         :param hidden_dim: 隐含层维度
         :param layer_number: 神经网络层数
+        :param output_size: 种类数
         """
         super(LSTMClassify, self).__init__()
         # 由于batch_first设置为true，所以输入数据形式为：(batch_size, seq_length, feature_dim)
         self.rnn = nn.LSTM(input_size=feature_dim, hidden_size=hidden_dim, num_layers=layer_number, batch_first=True)
+        # 如果单独使用LSTM，则需要知道output_size
+        if output_size is not None:
+            self.layer1 = nn.Linear(hidden_dim, output_size)
+            self.output_size = output_size
 
     def forward(self, x):
         """
@@ -81,11 +86,12 @@ class LSTMClassify(nn.Module):
         # rnn_output的数据格式为： (batch, seq_len, num_directions * hidden_size)
         rnn_output, (_, _) = self.rnn(x, None)
 
-        # output的数据格式为：(batch, num_directions * hidden_size)
-        # 这里选取最后一个时间节点的rnn_output输出，也就是h_n，
-        # 在实践中发现，最后一个时间节点大多为补充帧，对模型的分类效果可能较差，这里选取倒数第二个时间节点数据。
-        # output = self.layer1(rnn_output[:, -2, :])
-        # output = functional.softmax(output)
+        if self.output_size is not None:
+            # output的数据格式为：(batch, num_directions * hidden_size)
+            # 这里选取最后一个时间节点的rnn_output输出，也就是h_n，
+            # 在实践中发现，最后一个时间节点大多为补充帧，对模型的分类效果可能较差，这里选取倒数第二个时间节点数据。
+            output = self.layer1(rnn_output[:, -2, :])
+            return functional.softmax(output)
         return rnn_output
 
 

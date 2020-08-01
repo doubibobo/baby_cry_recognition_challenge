@@ -1,8 +1,9 @@
-import data.code.tools.data_analysis as da
+import torch.cuda as cuda
 import data.code.MLP.network as net
+import data.code.tools.data_analysis as da
 
 from data.code.tools import build_file_index as bf
-from data.code.tools import feature_extrator as fe
+from data.code.tools import feature_extractor as fe
 from data.code.tools.network_tools import train_process as tp
 
 K = 10                      # 进行10折交叉验证
@@ -22,23 +23,38 @@ if __name__ == '__main__':
     # fe.extract_spectrogram(file_label_indexes, "train")
     # # 写入到csv文件中
     # headers = fe.extract_features()
-    # fe.write_data_to_csv_file(headers, file_label_indexes, "data_extend_delta.csv", "train")
+    # fe.write_data_to_csv_file(headers, file_label_indexes, "data.csv", "train")
+    # #
+    # # 测试集特征提取
+    # test_label_indexes = bf.get_filename("test")
+    # fe.extract_spectrogram(test_label_indexes, "test")
+    # fe.write_data_to_csv_file(headers, test_label_indexes, "test.csv", "test")
+
+    # 查看GPU相关信息
+    gpu_available = cuda.is_available()
+    device_name = cuda.get_device_name(1)
+    device_capability = cuda.get_device_capability(1)
+    print(gpu_available)
+    print(device_name)
+    print(device_capability)
+    if gpu_available:
+        print("device_number is ", 1)
+        cuda.set_device(1)
+
     # 读取数据
     torch_data, torch_label = da.csv_handle("../data/data_extend.csv")
     # 构造神经网络
     network = [net.Network(INPUT_SIZE, OUTPUT_SIZE) for _ in range(K)]
+    print(network[0])
     # 进行训练
-    tp.train_process(torch_data, torch_label, network, K, LEARNING_RATE, EPOCH_NUMBER, BATCH_SIZE, WEIGHT_DELAY,
-                     network_filename=FILE_NAME)
+    tp.train_process(torch_data, torch_label, network, K, LEARNING_RATE, EPOCH_NUMBER, BATCH_SIZE,
+                     network_filename=FILE_NAME, gpu_available=gpu_available)
     # 不进行训练集合验证集合的划分，将全部数据拿来训练
     final_network = net.Network(INPUT_SIZE, OUTPUT_SIZE)
     tp.train_final_network(final_network, torch_data.float(), torch_label, LEARNING_RATE, EPOCH_NUMBER, WEIGHT_DELAY,
                            BATCH_SIZE, FILE_NAME)
-    # # #
-    # # 进行测试集合的验证
-    # test_label_indexes = bf.get_filename("test")
-    # # fe.extract_spectrogram(test_label_indexes, "test")
-    # fe.write_data_to_csv_file(headers, test_label_indexes, "test_extend_delta.csv", "test")
 
-    # test_data, _ = da.csv_handle("../data/test_extend.csv")
-    # fe.write_result_to_csv("../data/test_extend.csv", "result/result-07-30-03.csv", tp.test_process(test_data, FILE_NAME))
+    # 进行测试集验证
+    test_data, _ = da.csv_handle("../data/test_extend.csv")
+    fe.write_result_to_csv("../data/test_extend.csv", "models/result-06.csv",
+                           tp.test_process(test_data, FILE_NAME, gpu_available))

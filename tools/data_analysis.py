@@ -8,12 +8,13 @@ label_classes = {"awake": 0, "diaper": 1, "hug": 2,
                  "hungry": 3, "sleepy": 4, "uncomfortable": 5}
 
 
-def csv_handle(filename, another_file=None):
+def csv_handle(filename, another_file=None, is_test=False):
     """
     处理获取的csv文件，如：删除对训练无用的filename等
     @:arg
         filename: csv的文件路径
         another_file: 判断是否有第二个csv文件
+        is_test: 判断是否是测试集文件
     @:returns
         torch_data: 数据集
         labels: 标签
@@ -26,13 +27,17 @@ def csv_handle(filename, another_file=None):
         data_another = pd.read_csv(another_file)
         # 两个csv文件的行列进行首尾拼接
         data = pd.concat([data, data_another], axis=0)
-        # 提取第一列的文件名
-        file_name_col, frame_number_col = data['filename'], data['frame_number']
+        # 提取最后一列帧的序号
+        frame_number_col = data['frame_number'].copy()
+
+    # 提取第一列的文件名
+    file_name_col = data['filename'].copy()
 
     # 删除对训练数据无用的列，文件名只是训练时的标志序号
     data = data.drop(['filename'], axis=1)
     # 删除对训练数据无用的列，frame_number只是训练时的标志序号
-    if another_file is not None:
+
+    if another_file is not None or is_test:
         data = data.drop(['frame_number'], axis=1)
 
     # 对标签进行编码，用iloc函数提取最后一列[:, -1]，如果是取除最后一列以外的所有列[:, :-1]
@@ -46,7 +51,7 @@ def csv_handle(filename, another_file=None):
     torch_data -= x_mean
     torch_data /= x_standard
 
-    if another_file is not None:
+    if is_test:
         return torch_data, torch.from_numpy(numpy.array(labels)), file_name_col, frame_number_col
     else:
         return torch_data, torch.from_numpy(numpy.array(labels))

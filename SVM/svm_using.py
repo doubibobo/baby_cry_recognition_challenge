@@ -1,10 +1,11 @@
 import torch
+import time
 import pickle
 
 from data.code.tools.data_analysis import csv_handle
 from data.code.tools.data_analysis import get_k_fold_data
 from data.code.SVM.multi_svm import MultiSVM
-from data.code.tools.feature_extrator import write_result_to_csv
+from data.code.tools.feature_extractor import write_result_to_csv
 
 K_NUMBER = 10  # 进行10折交叉验证
 CLASSES_NUMBER = 6  # 总共有六种类型的数据
@@ -18,16 +19,17 @@ def gpu_setting(use_number):
     """
     use_gpu = torch.cuda.is_available()
     gpu_number = torch.cuda.device_count()
+
     if use_gpu and use_number < gpu_number:
         print('*' * 25, "GPU信息展示", '*' * 25)
         print(torch.cuda.get_device_capability(use_number))
         print(torch.cuda.get_device_name(use_number))
         print(torch.cuda.get_device_properties(use_number))
-        torch.cuda.set_device(gpu_number)
+        torch.cuda.set_device(0)
     return use_gpu
 
 
-def train_processing(data_train, label_train, gpu_available):
+def train_processing(data_train, label_train):
     """
     k折划分后的训练过程，并且要求使用最好的神经网络
     :param data_train:      数据集
@@ -82,14 +84,13 @@ def test_processing(data_test):
 
 
 if __name__ == '__main__':
-    # time_start = time.time()
-    # torch_data, torch_label = csv_handle("data_1.csv")
-    # # 进行训练
-    # train_processing(torch_data, torch_label)
+    time_start = time.time()
+    torch_data, torch_label = csv_handle("../data/data_extend.csv")
+    # 进行训练
+    train_processing(torch_data, torch_label)
     # # 进行测试集合的验证
     # headers = extract_features()
 
-    test_data, _ = csv_handle("../data/test_1.csv")
-    write_result_to_csv("../data/test_1.csv", "result/result.csv", test_processing(test_data))
-
+    # test_data, _ = csv_handle("test_1.csv")
+    # write_result_to_csv("test_1.csv", "result_gpu.csv", test_processing(test_data))
     # print('time span: ', time.time() - time_start)

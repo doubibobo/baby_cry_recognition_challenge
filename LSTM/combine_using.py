@@ -1,3 +1,4 @@
+import numpy
 import torch
 
 from data.code.LSTM import network as net
@@ -42,10 +43,14 @@ if __name__ == '__main__':
     print(torch_data.shape)
     # 构建LSTM-CNN网络
     network = [net.CombineClassify(INPUT_SIZE, HIDDEN_SIZE, 1, 1, OUTPUT_SIZE) for i in range(K)]
+    # 估测模型所占用的内存
+    param = sum([numpy.prod(list(p.size())) for p in network[0].parameters()])
+    # 下面的type_size是4，因为我们的参数是float32也就是4B，4个字节
+    print('Model {} : params: {:4f}M'.format(network[0]._get_name(), param * 4 / 1000 / 1000))
     # 训练网络
     tp.train_process(torch_data, torch_label, network, K, LEARNING_RATE, EPOCH_NUMBER, BATCH_SIZE,
                      network_filename=FILE_NAME)
     # 进行测试集合的验证
-    test_data, _ = da.csv_handle("test.csv")
+    test_data, _ = da.csv_handle("../data/test_for_rnn.csv")
     test_data = torch.reshape(test_data, (-1, TIME_STEP, INPUT_SIZE))
-    fe.write_result_to_csv("test.csv", "result.csv", tp.test_process(test_data, FILE_NAME))
+    fe.write_result_to_csv("../data/test_for_rnn.csv", "result/result_combine_01.csv", tp.test_process(test_data, FILE_NAME))

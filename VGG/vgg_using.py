@@ -3,7 +3,10 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import models, datasets, transforms, utils
 from data.code.tools import build_file_index as bf
 from data.code.tools import data_analysis as da
-from data.code.tools import feature_extrator as fe
+from data.code.tools import feature_extractor as fe
+
+import torch.cuda as cuda
+import torch.nn as nn
 
 import numpy
 import torch
@@ -81,6 +84,18 @@ if __name__ == '__main__':
 
     # 准备好的训练集合
     X_train, y_train = next(iter(data_loader_image["data_train"]))
+
+    # 查看GPU相关信息
+    gpu_available = cuda.is_available()
+    device_name = cuda.get_device_name(1)
+    device_capability = cuda.get_device_capability(1)
+    print(gpu_available)
+    print(device_name)
+    print(device_capability)
+    if gpu_available:
+        print("device_number is ", 1)
+        cuda.set_device(1)
+
     # 冻结VGG网络的参数
     for param in model.parameters():
         param.requires_grad = False
@@ -101,7 +116,7 @@ if __name__ == '__main__':
     print(model)
 
     # 开始训练
-    n_epochs = 1
+    n_epochs = 100
     for epoch in range(n_epochs):
         since = time.time()
         print("Epoch{}/{}".format(epoch, n_epochs))
@@ -140,7 +155,8 @@ if __name__ == '__main__':
             epoch_loss = running_loss / len(data_image[param])
             epoch_correct = 100 * running_correct / len(data_image[param])
 
-            print("{}  Loss:{:.4f},  Correct{:.4f}".format(param, epoch_loss, epoch_correct))
+            print("{}  Loss:{:.4f},  Correct:{:.4f} ".format(param, epoch_loss, epoch_correct))
+
         now_time = time.time() - since
         print("Training time is:{:.0f}m {:.0f}s".format(now_time // 60, now_time % 60))
 
