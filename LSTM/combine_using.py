@@ -1,6 +1,5 @@
 import numpy
 import torch
-import torch.cuda as cuda
 
 from data.code.LSTM import network as net
 
@@ -8,6 +7,7 @@ from data.code.tools import build_file_index as bf
 from data.code.tools import data_analysis as da
 from data.code.tools import feature_extrator as fe
 from data.code.tools.network_tools import train_process as tp
+from data.code.tools.training_tools import gpu_selector as gs
 
 # 定义超参数
 K = 10
@@ -38,15 +38,7 @@ if __name__ == '__main__':
     # print(tool_dictionary)
 
     # 查看GPU相关信息
-    gpu_available = cuda.is_available()
-    device_name = cuda.get_device_name(1)
-    device_capability = cuda.get_device_capability(1)
-    print(gpu_available)
-    print(device_name)
-    print(device_capability)
-    if gpu_available:
-        print("device_number is ", 1)
-        cuda.set_device(1)
+    gpu_available = gs.gpu_selector()
 
     # 读取数据，并进行数据的重塑
     torch_data, torch_label = da.csv_handle("../data/data_for_rnn_1.csv", "../data/data_for_rnn.csv")

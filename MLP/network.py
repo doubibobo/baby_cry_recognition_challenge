@@ -22,10 +22,10 @@ class Network(nn.Module):
         self.layer2 = nn.Linear(256, 128)
         self.layer3 = nn.Linear(128, 64)
         self.layer4 = nn.Linear(64, output_dim)
-        self.layer1_bn = batch_normalization_layer(1)
-        self.layer2_bn = batch_normalization_layer(1)
-        self.layer3_bn = batch_normalization_layer(1)
-        self.layer4_bn = batch_normalization_layer(1)
+        self.layer1_bn = batch_normalization_layer(256)
+        self.layer2_bn = batch_normalization_layer(128)
+        self.layer3_bn = batch_normalization_layer(64)
+        self.layer4_bn = batch_normalization_layer(output_dim)
 
     def forward(self, x):
         x = self.layer1(x)
