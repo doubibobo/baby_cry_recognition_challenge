@@ -5,6 +5,7 @@ import data.code.tools.data_analysis as da
 from data.code.tools import build_file_index as bf
 from data.code.tools import feature_extractor as fe
 from data.code.tools.network_tools import train_process as tp
+from data.code.tools.training_tools import gpu_selector as gs
 
 K = 10                      # 进行10折交叉验证
 EPOCH_NUMBER = 1000         # 循环迭代次数为20
@@ -13,7 +14,7 @@ WEIGHT_DELAY = 0
 BATCH_SIZE = 32
 INPUT_SIZE = 38
 OUTPUT_SIZE = 6
-FILE_NAME = "MLP_network_bs_32_epoch_1000_lr_small_01.pkl"
+FILE_NAME = "MLP_network_bs_32_epoch_1000_lr_small_bn_01.pkl"
 
 
 if __name__ == '__main__':
@@ -30,16 +31,7 @@ if __name__ == '__main__':
     # fe.extract_spectrogram(test_label_indexes, "test")
     # fe.write_data_to_csv_file(headers, test_label_indexes, "test.csv", "test")
 
-    # 查看GPU相关信息
-    gpu_available = cuda.is_available()
-    device_name = cuda.get_device_name(1)
-    device_capability = cuda.get_device_capability(1)
-    print(gpu_available)
-    print(device_name)
-    print(device_capability)
-    if gpu_available:
-        print("device_number is ", 1)
-        cuda.set_device(1)
+    gpu_available = gs.gpu_selector()
 
     # 读取数据
     torch_data, torch_label = da.csv_handle("../data/data_extend.csv")
@@ -56,5 +48,5 @@ if __name__ == '__main__':
 
     # 进行测试集验证
     test_data, _ = da.csv_handle("../data/test_extend.csv")
-    fe.write_result_to_csv("../data/test_extend.csv", "models/result-06.csv",
+    fe.write_result_to_csv("../data/test_extend.csv", "models/result-07.csv",
                            tp.test_process(test_data, FILE_NAME, gpu_available))

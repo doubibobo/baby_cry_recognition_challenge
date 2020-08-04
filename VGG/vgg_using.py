@@ -4,6 +4,7 @@ from torchvision import models, datasets, transforms, utils
 from data.code.tools import build_file_index as bf
 from data.code.tools import data_analysis as da
 from data.code.tools import feature_extractor as fe
+from data.code.tools.training_tools import gpu_selector as gs
 
 import torch.cuda as cuda
 import torch.nn as nn
@@ -85,16 +86,7 @@ if __name__ == '__main__':
     # 准备好的训练集合
     X_train, y_train = next(iter(data_loader_image["data_train"]))
 
-    # 查看GPU相关信息
-    gpu_available = cuda.is_available()
-    device_name = cuda.get_device_name(1)
-    device_capability = cuda.get_device_capability(1)
-    print(gpu_available)
-    print(device_name)
-    print(device_capability)
-    if gpu_available:
-        print("device_number is ", 1)
-        cuda.set_device(1)
+    gpu_available = gs.gpu_selector()
 
     # 冻结VGG网络的参数
     for param in model.parameters():
