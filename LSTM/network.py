@@ -41,7 +41,20 @@ class CNNClassify(nn.Module):
         ]))
 
         # 全连接分类模块
-        self.layer1 = nn.Linear(32 * 18 * 1, class_number)
+        self.fully_connection = nn.Sequential(OrderedDict([
+            ("layer1", nn.Linear(32 * 18 * 15, 1024)),
+            ("ReLU1", nn.ReLU()),
+            ("layer2", nn.Linear(1024, 512)),
+            ("ReLU2", nn.ReLU()),
+            ("layer3", nn.Linear(512, 256)),
+            ("ReLU3", nn.ReLU()),
+            ("layer4", nn.Linear(256, 64)),
+            ("ReLU4", nn.ReLU()),
+            ("layer5", nn.Linear(64, class_number)),
+            ("soft1", nn.Softmax()),
+        ]))
+        # # 全连接分类模块
+        # self.layer1 = nn.Linear(32 * 18 * 15, class_number)
 
     def forward(self, x):
         """
@@ -51,8 +64,9 @@ class CNNClassify(nn.Module):
         """
         x = self.cnn(x)
         x = x.view(x.shape[0], -1)
-        x = self.layer1(x)
-        x = functional.softmax(x)
+        # x = self.layer1(x)
+        # x = functional.softmax(x)
+        x = self.fully_connection(x)
         return x
 
 
@@ -76,6 +90,8 @@ class LSTMClassify(nn.Module):
         if output_size is not None:
             self.layer1 = nn.Linear(hidden_dim, output_size)
             self.output_size = output_size
+        else:
+            self.output_size = None
 
     def forward(self, x):
         """
@@ -124,7 +140,7 @@ class CombineClassify(nn.Module):
         :return: 输出值
         """
         # 首先将数据送入LSTM中，输出为： (batch, seq_length, num_directions * hidden_size)
-        rnn_output = self.lstm(x, None)
+        rnn_output = self.lstm(x)
         # CNN需要的数据输入格式为：(batch_size, channel, height, width)
         #   也即： (batch_size, channel, seq_length, num_directions * hidden_size)
         shape = rnn_output.shape
