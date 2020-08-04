@@ -135,11 +135,11 @@ def get_k_fold_data(k, number, data, label, divided_list_index):
     """
     data_train, label_train, data_validation, label_validation = None, None, None, None
     for i in range(k):
-        # TODO 这里的K折交叉验证好菜，没有考虑数据集平衡的问题，就是非常单纯的做了数据划分，啊噗
-        # TODO 问题：每次生成的验证集最多含有两类数据，且被大批量取出来的类别的训练集数目会减少很多，导致训练失衡
-        # TODO 思路：生成一个随机数种子seed，将其取值范围重置为0-K
-        # TODO 结果：index = [i for i in range(len(data))] index[0:len(index):K]
-        # TODO anyway, 第69行已经将list_index打乱了
+        #  这里的K折交叉验证好菜，没有考虑数据集平衡的问题，就是非常单纯的做了数据划分，啊噗
+        #  问题：每次生成的验证集最多含有两类数据，且被大批量取出来的类别的训练集数目会减少很多，导致训练失衡
+        #  思路：生成一个随机数种子seed，将其取值范围重置为0-K
+        #  结果：index = [i for i in range(len(data))] index[0:len(index):K]
+        #  anyway, 第69行已经将list_index打乱了
         data_part, label_part = data[divided_list_index[i], :], label[divided_list_index[i]]
         if i == number:
             data_validation, label_validation = data_part, label_part
