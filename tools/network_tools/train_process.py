@@ -82,7 +82,7 @@ def train(network, data_train, label_train, data_validation, label_validation, l
         # if epoch >= 100 and abs(loss_train[-1].__getitem__(0) - loss_train[-2].__getitem__(0)) <= 1e-5:
         #     break
         if data_validation is not None:
-            loss_validation.append(log_rmse(True, network, data_validation, label_validation, loss_function))
+            loss_validation.append(log_rmse(True, network, data_validation, label_validation, loss_function, epoch))
 
     del data_train, label_train, data_validation, label_validation
     return loss_train, loss_validation

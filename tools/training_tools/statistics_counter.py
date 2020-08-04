@@ -14,5 +14,5 @@ def counter_statistics(waiting):
 
     for key, v in result:
         accuracy.append((key, v / summary))
-    print(result)
-    print(accuracy)
+    print(sorted(result))
+    print(sorted(accuracy))
