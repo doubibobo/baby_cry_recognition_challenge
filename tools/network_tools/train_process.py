@@ -82,7 +82,7 @@ def train(network, data_train, label_train, data_validation, label_validation, l
         # if epoch >= 100 and abs(loss_train[-1].__getitem__(0) - loss_train[-2].__getitem__(0)) <= 1e-5:
         #     break
         if data_validation is not None:
-            loss_validation.append(log_rmse(True, network, data_validation, label_validation, loss_function))
+            loss_validation.append(log_rmse(True, network, data_validation, label_validation, loss_function, epoch))
 
     del data_train, label_train, data_validation, label_validation
     return loss_train, loss_validation
@@ -108,9 +108,13 @@ def train_process(data_train_input, label_train_input, network, k_number, learni
     loss_train_sum, loss_validation_sum = 0, 0
     accuracy_train_sum, accuracy_validation_sum = 0, 0
 
+    # 进行交叉验证数据集的划分
+    divided_list_index = da.get_k_fold_data_by_random(k_number, label_train_input)
+
     for i in range(k_number):
-        data_train, label_train, data_validation, label_validation = da.get_k_fold_data(k_number, i, data_train_input,
-                                                                                        label_train_input)
+
+        data_train, label_train, data_validation, label_validation = da.get_k_fold_data(
+            k_number, i, data_train_input, label_train_input, divided_list_index)
         print('*' * 25, '第', i + 1, '折开始', '*' * 25)
         sc.counter_statistics(label_validation)
         sc.counter_statistics(label_train)

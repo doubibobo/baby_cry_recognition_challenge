@@ -2,7 +2,7 @@ import torch
 from data.code.tools.training_tools import statistics_counter as sc
 
 
-def log_rmse(flag, network, x, y, loss_function):
+def log_rmse(flag, network, x, y, loss_function, epoch=99):
     """
     网络模型评价指标
     :param flag: 是否是验证集
@@ -10,6 +10,7 @@ def log_rmse(flag, network, x, y, loss_function):
     :param x: 样本
     :param y: 样本标签
     :param loss_function: 损失函数
+    :param epoch: 迭代次数，默认为100
     :return: 计算值
     """
     if flag:
@@ -20,9 +21,9 @@ def log_rmse(flag, network, x, y, loss_function):
     corrects = (result.data == y.data).sum().item()
 
     # 计算每个类别的准确率
-    if flag:
-        sc.counter_statistics(result.data)
-
+    if flag and epoch % 99 == 0 and epoch != 0:
+        # sc.counter_statistics(result.data.cpu())
+        pass
     accuracy = corrects * 100 / len(y)
     loss = loss_function(output, y)
     # Sets the module in training mode.

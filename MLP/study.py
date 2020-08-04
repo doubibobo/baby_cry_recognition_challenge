@@ -8,7 +8,7 @@ from data.code.tools.network_tools import train_process as tp
 from data.code.tools.training_tools import gpu_selector as gs
 
 K = 10                      # 进行10折交叉验证
-EPOCH_NUMBER = 100          # 循环迭代次数为20
+EPOCH_NUMBER = 200          # 循环迭代次数为20
 LEARNING_RATE = 0.001        # 学习率
 WEIGHT_DELAY = 0
 BATCH_SIZE = 32

@@ -7,6 +7,11 @@ import torch
 label_classes = {"awake": 0, "diaper": 1, "hug": 2,
                  "hungry": 3, "sleepy": 4, "uncomfortable": 5}
 
+"明确整个数据集中，各个类型的数量及总数量"
+number_classes = [160, 134, 160, 160, 144, 160]
+sum_number = sum(number_classes)
+expect_proportion = [number_classes[i] / sum_number for i in range(len(number_classes))]
+
 
 def csv_handle(filename, another_file=None, is_test=False):
     """
@@ -57,7 +62,7 @@ def csv_handle(filename, another_file=None, is_test=False):
         return torch_data, torch.from_numpy(numpy.array(labels))
 
 
-def get_k_fold_data(k, number, data, label):
+def get_k_fold_data_by_random(k, label):
     """
     划分数据集为训练集（train）和验证集（validation）
     实现K折交叉验证方法
@@ -66,13 +71,68 @@ def get_k_fold_data(k, number, data, label):
         number: 第几折
         data: 数据集
         y: 标签
-    :returns
+    :return divided_list_index
     """
     assert k > 1
-    fold_size = data.shape[0] // k  # 确定每一折的个数
-    list_index = [i for i in range(data.shape[0])]
+    fold_size = label.shape[0] // k  # 确定每一折的个数
+    list_index = [i for i in range(label.shape[0])]
     random.shuffle(list_index)
 
+    divided_list_index = [[] for _ in range(k)]
+
+    for i in range(k):
+        index = slice(i * fold_size, (i + 1) * fold_size)  # valid的索引
+        divided_list_index[i].extend(list_index[index])
+
+    return divided_list_index
+
+
+def get_k_fold_data_by_proportion(k, label):
+    """
+    按照比例进行测试集和验证集的划分
+    :param k: 总折数
+    :param label: 数据标签，用来确定下标位置
+    :return: divided_list_index，为划分好的数据集，是二维数组，(第几折，具体的下标)
+    """
+    assert k > 1
+    list_index = [[] for _ in range(len(number_classes))]
+    for i in range(len(number_classes)):
+        # 取值为i的label的元素下标
+        for j in range(len(label)):
+            if label[j] == i:
+                list_index[i].append(j)
+            if len(list_index[i]) == number_classes[i]:
+                break
+    # 打乱每一种标签的数据顺序
+    [random.shuffle(list_index[i]) for i in range(len(number_classes))]
+    # 对每类数据样本划分K个子样本
+    divided_list_index = [[] for _ in range(k)]
+    for i in range(len(number_classes)):
+        every_k_length = [number_classes[i] // k for _ in k]
+        remaining_length = number_classes[i] - k * every_k_length[0]
+        remaining_k_chosen = random.sample(range(1, k), remaining_length)
+        for j in range(len(remaining_k_chosen)):
+            every_k_length[remaining_k_chosen[j]] = every_k_length[remaining_k_chosen[j]] + 1
+        # 将每一类数据划分为k块
+        for j in k:
+            if j == 0:
+                index = slice(0, every_k_length[1])
+            else:
+                index = slice(every_k_length[j-1], every_k_length[j])  # valid的索引
+            divided_list_index[j].extend(list_index[i][index])
+    return divided_list_index
+
+
+def get_k_fold_data(k, number, data, label, divided_list_index):
+    """
+    取完成k折划分之后的数据
+    :param k: 总折数
+    :param number: 第几折
+    :param data: 数据集
+    :param label: 标签集
+    :param divided_list_index：数据的下标
+    :returns: 训练集数据、训练集标签、验证集数据、验证集标签
+    """
     data_train, label_train, data_validation, label_validation = None, None, None, None
     for i in range(k):
         # TODO 这里的K折交叉验证好菜，没有考虑数据集平衡的问题，就是非常单纯的做了数据划分，啊噗
@@ -80,8 +140,7 @@ def get_k_fold_data(k, number, data, label):
         # TODO 思路：生成一个随机数种子seed，将其取值范围重置为0-K
         # TODO 结果：index = [i for i in range(len(data))] index[0:len(index):K]
         # TODO anyway, 第69行已经将list_index打乱了
-        index = slice(i * fold_size, (i + 1) * fold_size)  # valid的索引
-        data_part, label_part = data[list_index[index], :], label[list_index[index]]
+        data_part, label_part = data[divided_list_index[i], :], label[divided_list_index[i]]
         if i == number:
             data_validation, label_validation = data_part, label_part
         elif data_train is None:
