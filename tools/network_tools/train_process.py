@@ -8,6 +8,7 @@ from data.code.tools import mix_up as mu
 from data.code.tools.network_tools import base_class as bc
 from data.code.tools.network_tools import accuracy_loss_plotting as alp
 from data.code.tools.network_tools.log_rmse import log_rmse
+from data.code.tools.training_tools import statistics_counter as sc
 
 
 def train(network, data_train, label_train, data_validation, label_validation, learning_rate,
@@ -34,7 +35,8 @@ def train(network, data_train, label_train, data_validation, label_validation, l
     if gpu_available:
         network = network.cuda()
         data_train, label_train = data_train.cuda(), label_train.cuda()
-        data_validation, label_validation = data_validation.cuda(), label_validation.cuda()
+        if data_validation is not None and label_validation is not None:
+            data_validation, label_validation = data_validation.cuda(), label_validation.cuda()
         print("数据已经转化为gpu类型")
 
     # 将数据封装成DataLoader
@@ -110,6 +112,8 @@ def train_process(data_train_input, label_train_input, network, k_number, learni
         data_train, label_train, data_validation, label_validation = da.get_k_fold_data(k_number, i, data_train_input,
                                                                                         label_train_input)
         print('*' * 25, '第', i + 1, '折开始', '*' * 25)
+        sc.counter_statistics(label_validation)
+        sc.counter_statistics(label_train)
         # 对每一份数据及神经网络进行训练
         loss_train, loss_validation = train(network[i], data_train, label_train, data_validation,
                                             label_validation, learning_rate, epoch_number, weight_decay, batch_size,
@@ -147,7 +151,7 @@ def train_process(data_train_input, label_train_input, network, k_number, learni
 
 
 def train_final_network(final_network, data_train, label_train, learning_rate, epoch_number, weight_decay, batch_size,
-                        file_name="net.pkl"):
+                        file_name="net.pkl", gpu_available=False):
     """
     :param final_network: 构造的神经网络
     :param data_train: 训练集
@@ -157,10 +161,11 @@ def train_final_network(final_network, data_train, label_train, learning_rate, e
     :param weight_decay: 正则化项目
     :param batch_size: 每组的样本个数
     :param file_name: 神经网络保存的文件名
+    :param gpu_available: 是否使用GPU进行训练
     :return: 无返回结果，直接打印输出
     """
-    dataset = bc.TrainDataSet(data_train, label_train)
-    loss_train, _ = train(final_network, dataset, None, None, learning_rate, epoch_number, weight_decay, batch_size)
+    loss_train, _ = train(final_network, data_train, label_train, None, None, learning_rate, epoch_number, weight_decay,
+                          batch_size, gpu_available)
     # 画出训练过程中的accuracy和loss变换曲线
     alp.accuracy_loss_plotting(loss_train, epoch_number, 100, True)
     print('#' * 10, '最终训练结果', '#' * 10)
