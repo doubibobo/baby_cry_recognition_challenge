@@ -10,6 +10,8 @@ from data.code.tools.network_tools import accuracy_loss_plotting as alp
 from data.code.tools.network_tools.log_rmse import log_rmse
 from data.code.tools.training_tools import statistics_counter as sc
 
+from data.code.tools.algorithm import Adam as Adam_GCC
+
 
 def train(network, data_train, label_train, data_validation, label_validation, learning_rate,
           epoch_number=30, weight_decay=0.0001, batch_size=32, gpu_available=False, alpha=0):
@@ -48,10 +50,13 @@ def train(network, data_train, label_train, data_validation, label_validation, l
     # 使用cross_entropy损失函数
     loss_function = nn.CrossEntropyLoss()
 
-    # 使用Adam优化算法
-    optimizer = torch.optim.Adam(params=network.parameters(), lr=learning_rate, weight_decay=weight_decay)
-    # 动态调整学习率
+    # # 使用Adam优化算法
+    # optimizer = torch.optim.Adam(params=network.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
+    # 使用改进的Adam_GC优化算法
+    optimizer = Adam_GCC.Adam_GC(params=network.parameters(), lr=learning_rate, weight_decay=weight_decay)
+
+    # 动态调整学习率
     # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=200, gamma=0.1)
     # 使用GPU
     if gpu_available:

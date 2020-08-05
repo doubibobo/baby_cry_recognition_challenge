@@ -108,13 +108,13 @@ def get_k_fold_data_by_proportion(k, label):
     # 对每类数据样本划分K个子样本
     divided_list_index = [[] for _ in range(k)]
     for i in range(len(number_classes)):
-        every_k_length = [number_classes[i] // k for _ in k]
+        every_k_length = [number_classes[i] // k for _ in range(k)]
         remaining_length = number_classes[i] - k * every_k_length[0]
         remaining_k_chosen = random.sample(range(1, k), remaining_length)
         for j in range(len(remaining_k_chosen)):
             every_k_length[remaining_k_chosen[j]] = every_k_length[remaining_k_chosen[j]] + 1
         # 将每一类数据划分为k块
-        for j in k:
+        for j in range(k):
             if j == 0:
                 index = slice(0, every_k_length[1])
             else:
