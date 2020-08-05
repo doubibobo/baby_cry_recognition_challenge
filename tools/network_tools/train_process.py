@@ -30,6 +30,8 @@ def train(network, data_train, label_train, data_validation, label_validation, l
     """
     # 定义训练集的loss和accuracy为loss_train 测试集的loss和accuracy为loss_validation
     loss_train, loss_validation = [], []
+    best_accuracy_validation = 0
+    early_stop_epoch = 0
 
     # 使用GPU进行训练
     if gpu_available:
@@ -52,7 +54,8 @@ def train(network, data_train, label_train, data_validation, label_validation, l
     optimizer = torch.optim.Adam(params=network.parameters(), lr=learning_rate, weight_decay=weight_decay)
     # 动态调整学习率
 
-    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=200, gamma=0.1)
+    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min')
     # 使用GPU
     if gpu_available:
         loss_function = loss_function.cuda()
@@ -70,6 +73,7 @@ def train(network, data_train, label_train, data_validation, label_validation, l
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+
         # for X, y in train_iter:
         #     output = network(X)
         #     loss = loss_function(output, y)
@@ -79,10 +83,17 @@ def train(network, data_train, label_train, data_validation, label_validation, l
         # 得到每个epoch的 loss 和 accuracy
         # print("epoch is ", epoch)
         loss_train.append(log_rmse(False, network, dataset.x_data, dataset.y_data, loss_function))
-        # if epoch >= 100 and abs(loss_train[-1].__getitem__(0) - loss_train[-2].__getitem__(0)) <= 1e-5:
-        #     break
+
         if data_validation is not None:
             loss_validation.append(log_rmse(True, network, data_validation, label_validation, loss_function, epoch))
+        scheduler.step(loss_validation[-1][1])
+
+        # if data_validation is not None and loss_validation[-1][1] >= best_accuracy_validation:
+        #     best_accuracy_validation = loss_validation[-1][1]
+        # else:
+        #     early_stop_epoch = early_stop_epoch + 1
+        # if early_stop_epoch >= 10:
+        #     break
 
     del data_train, label_train, data_validation, label_validation
     return loss_train, loss_validation
