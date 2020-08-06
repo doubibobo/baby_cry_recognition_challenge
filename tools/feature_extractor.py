@@ -3,7 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import csv
 import os
+import numpy
 import pandas as pd
+
+from scipy.io import wavfile
 
 import data.code.tools.build_file_index as bf
 
@@ -152,13 +155,43 @@ def write_data_to_csv_file(header, indexes, filename, selection, to_frame=False)
         writer = csv.writer(file)
         writer.writerow(header)
         file.close()
+        # count = 0
         for key, value in indexes.items():
-            wav, sample_rate = librosa.load(bf.filePath + selection + "/" + (value if selection == "train" else "") +
-                                            "/" + (key if selection == "train" else os.path.split(key)[1]),
-                                            mono=True, duration=15)
+            # 获取样本的路径
+            file_path = bf.filePath + selection + "/" + (value if selection == "train" else "") + "/" + \
+                        (key if selection == "train" else os.path.split(key)[1])
+            wav, sample_rate = librosa.load(file_path, mono=True, duration=15)
+            # # 获取样本的长度
+            # length = librosa.get_duration(filename=file_path)
+            # # 判断是否有新的数据集
+            # if length < 20:
+            #     continue
+            # elif 20 <= length <= 30:
+            #     # 存储新的数据
+            #     wav, sample_rate = librosa.load(file_path, mono=True, offset=length-15, duration=15)
+            #     wavfile.write("../data/" + value + '/new_' + str(count) + '.wav', sample_rate, wav)
+            #     count = count + 1
+            # elif 30 < length <= 45:
+            #     wav_1, sample_rate = librosa.load(file_path, mono=True, offset=15, duration=15)
+            #     wav_2, _ = librosa.load(file_path, mono=True, offset=length-15, duration=15)
+            #     wavfile.write("../data/" + value + '/new_' + str(count) + '.wav', sample_rate, wav_1)
+            #     count = count + 1
+            #     wavfile.write("../data/" + value + '/new_' + str(count) + '.wav', sample_rate, wav_2)
+            #     count = count + 1
+            # else:
+            #     print(key + ' length is more than 45s!')
+            # continue
+            # 对语音数据进行预处理
+            wav = librosa.effects.preemphasis(wav)
+
             if to_frame:
                 frames = framing(wav, sample_rate, 0.02, 0.01, 15)
             else:
+                # # 数据增强，进行Time Stretch变换、Pitch Shift变换、roll变换（滚动变换）
+                # wav_time_stretch = librosa.effects.time_stretch(wav, rate=1.2)
+                # wav_pitch_shift = librosa.effects.pitch_shift(wav, sample_rate, n_steps=3.0)
+                # wav_roll = np.roll(wav, sample_rate * 10)
+                # frames = [wav, wav_time_stretch, wav_pitch_shift, wav_roll]
                 frames = [wav]
             for i in range(len(frames)):
                 chroma_stft = librosa.feature.chroma_stft(y=frames[i], sr=sample_rate)
