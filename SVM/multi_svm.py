@@ -1,5 +1,5 @@
 from data.code.SVM.SVM import SVM
-from data.code.tools.data_analysis import get_k_fold_data
+from data.code.tools.data_tools.data_analysis import get_k_fold_data
 
 import numpy
 import torch

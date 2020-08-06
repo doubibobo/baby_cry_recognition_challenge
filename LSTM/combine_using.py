@@ -1,11 +1,9 @@
-import numpy
 import torch
 
 from data.code.LSTM import network as net
 
-from data.code.tools import build_file_index as bf
-from data.code.tools import data_analysis as da
-from data.code.tools import feature_extractor as fe
+from data.code.tools.data_tools import data_analysis as da
+from data.code.tools.feature_tools import feature_extractor as fe
 from data.code.tools.network_tools import train_process as tp
 from data.code.tools.training_tools import gpu_selector as gs
 

@@ -3,8 +3,7 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 
-from data.code.tools import data_analysis as da
-from data.code.tools import mix_up as mu
+from data.code.tools.data_tools import data_analysis as da, mix_up as mu
 from data.code.tools.network_tools import base_class as bc
 from data.code.tools.network_tools import accuracy_loss_plotting as alp
 from data.code.tools.network_tools.log_rmse import log_rmse

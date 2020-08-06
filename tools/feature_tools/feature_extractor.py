@@ -3,12 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import csv
 import os
-import numpy
 import pandas as pd
 
-from scipy.io import wavfile
-
-import data.code.tools.build_file_index as bf
+import data.code.tools.feature_tools.build_file_index as bf
 
 "建立训练时的标签和语音类别的映射关系"
 classes_labels = ["awake", "diaper", "hug", "hungry", "sleepy", "uncomfortable"]
@@ -88,14 +85,15 @@ def signal_append(signal, sample_rate, signal_window):
     return signal
 
 
-def framing(signal, sample_rate, frame_window, shift_window, signal_window):
+def framing(signal, sample_rate, frame_window, shift_window, signal_window, hamming=False):
     """
-    进行语音的分帧操作
+    进行语音的分帧操作，如果hamming为True，则需要加hamming窗
     :param signal: 原始语音信号
     :param sample_rate: 采样率
     :param frame_window: 帧窗口，单位为ms
     :param shift_window: 步长窗口，单位为ms
     :param signal_window: 语音窗口，单位为ms
+    :param hamming: 是否要进行加窗操作，hamming加窗，默认为False
     :return: 经过分帧处理以后的数据帧
     """
     # 每一帧包含的样本数目，以及每隔多少个样本到下一帧
@@ -112,6 +110,9 @@ def framing(signal, sample_rate, frame_window, shift_window, signal_window):
     # TODO 此处应该改为舍弃，因为数据集中大量样本的最后一帧都是补充帧，对分类效果影响较大
     indexes = np.tile(np.arange(0, frame_length), (frame_numbers, 1)) + np.tile(
         np.arange(0, frame_numbers * step_length, step_length), (frame_length, 1)).T
+    # 进行hamming加窗操作
+    if hamming:
+        return padding_signal_length[indexes.astype(np.int32, copy=False)] * np.hamming(frame_length)
     return padding_signal_length[indexes.astype(np.int32, copy=False)]
 
 
@@ -185,7 +186,7 @@ def write_data_to_csv_file(header, indexes, filename, selection, to_frame=False)
             wav = librosa.effects.preemphasis(wav)
 
             if to_frame:
-                frames = framing(wav, sample_rate, 0.02, 0.01, 15)
+                frames = framing(wav, sample_rate, 0.025, 0.01, 15, True)
             else:
                 # # 数据增强，进行Time Stretch变换、Pitch Shift变换、roll变换（滚动变换）
                 # wav_time_stretch = librosa.effects.time_stretch(wav, rate=1.2)

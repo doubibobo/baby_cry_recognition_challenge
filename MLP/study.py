@@ -1,11 +1,4 @@
-import torch.cuda as cuda
-import data.code.MLP.network as net
-import data.code.tools.data_analysis as da
-
-from data.code.tools import build_file_index as bf
-from data.code.tools import feature_extractor as fe
-from data.code.tools.network_tools import train_process as tp
-from data.code.tools.training_tools import gpu_selector as gs
+from data.code.tools.feature_tools import build_file_index as bf, feature_extractor as fe
 
 K = 10                      # 进行10折交叉验证
 EPOCH_NUMBER = 200          # 循环迭代次数为20
