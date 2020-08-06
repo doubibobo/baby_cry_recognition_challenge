@@ -10,6 +10,8 @@ from data.code.tools.network_tools import accuracy_loss_plotting as alp
 from data.code.tools.network_tools.log_rmse import log_rmse
 from data.code.tools.training_tools import statistics_counter as sc
 
+from data.code.tools.algorithm import Adam as Adam_GCC
+
 
 def train(network, data_train, label_train, data_validation, label_validation, learning_rate,
           epoch_number=30, weight_decay=0.0001, batch_size=32, gpu_available=False, alpha=0):
@@ -50,12 +52,14 @@ def train(network, data_train, label_train, data_validation, label_validation, l
     # 使用cross_entropy损失函数
     loss_function = nn.CrossEntropyLoss()
 
-    # 使用Adam优化算法
-    optimizer = torch.optim.Adam(params=network.parameters(), lr=learning_rate, weight_decay=weight_decay)
-    # 动态调整学习率
+    # # 使用Adam优化算法
+    # optimizer = torch.optim.Adam(params=network.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
-    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min')
+    # 使用改进的Adam_GC优化算法
+    optimizer = Adam_GCC.Adam_GC(params=network.parameters(), lr=learning_rate, weight_decay=weight_decay)
+
+    # 动态调整学习率
+    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=200, gamma=0.1)
     # 使用GPU
     if gpu_available:
         loss_function = loss_function.cuda()
@@ -86,7 +90,7 @@ def train(network, data_train, label_train, data_validation, label_validation, l
 
         if data_validation is not None:
             loss_validation.append(log_rmse(True, network, data_validation, label_validation, loss_function, epoch))
-        scheduler.step(loss_validation[-1][1])
+        # scheduler.step(loss_validation[-1][1])
 
         # if data_validation is not None and loss_validation[-1][1] >= best_accuracy_validation:
         #     best_accuracy_validation = loss_validation[-1][1]
@@ -120,7 +124,7 @@ def train_process(data_train_input, label_train_input, network, k_number, learni
     accuracy_train_sum, accuracy_validation_sum = 0, 0
 
     # 进行交叉验证数据集的划分
-    divided_list_index = da.get_k_fold_data_by_random(k_number, label_train_input)
+    divided_list_index = da.get_k_fold_data_by_proportion(k_number, label_train_input)
 
     for i in range(k_number):
 

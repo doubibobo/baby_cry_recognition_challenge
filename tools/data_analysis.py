@@ -8,7 +8,7 @@ label_classes = {"awake": 0, "diaper": 1, "hug": 2,
                  "hungry": 3, "sleepy": 4, "uncomfortable": 5}
 
 "明确整个数据集中，各个类型的数量及总数量"
-number_classes = [160, 134, 160, 160, 144, 160]
+number_classes = [160 * 4, 159 * 4, 160 * 4, 160 * 4, 158 * 4, 160 * 4]
 sum_number = sum(number_classes)
 expect_proportion = [number_classes[i] / sum_number for i in range(len(number_classes))]
 

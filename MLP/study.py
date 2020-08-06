@@ -8,13 +8,13 @@ from data.code.tools.network_tools import train_process as tp
 from data.code.tools.training_tools import gpu_selector as gs
 
 K = 10                          # 进行10折交叉验证
-EPOCH_NUMBER = 200              # 循环迭代次数为20
+EPOCH_NUMBER = 100              # 循环迭代次数为20
 LEARNING_RATE = 0.001           # 学习率
 WEIGHT_DELAY = 0
 BATCH_SIZE = 32
 INPUT_SIZE = 38
 OUTPUT_SIZE = 6
-FILE_NAME = "MLP_network_bs_32_epoch_1000_lr_small_bn_07.pkl"
+FILE_NAME = "MLP_network_bs_32_epoch_1000_lr_small_bn_08.pkl"
 
 
 if __name__ == '__main__':
@@ -34,7 +34,7 @@ if __name__ == '__main__':
     gpu_available = gs.gpu_selector()
 
     # 读取数据
-    torch_data, torch_label = da.csv_handle("../data/data_extend.csv")
+    torch_data, torch_label = da.csv_handle("../data/data_cqt_new.csv")
     # 构造神经网络
     network = [net.Network(INPUT_SIZE, OUTPUT_SIZE) for _ in range(K)]
     print(network[0])
@@ -48,5 +48,5 @@ if __name__ == '__main__':
 
     # 进行测试集验证
     test_data, _ = da.csv_handle("../data/test_extend.csv")
-    fe.write_result_to_csv("../data/test_extend.csv", "models/result-13.csv",
+    fe.write_result_to_csv("../data/test_extend.csv", "models/result-20.csv",
                            tp.test_process(test_data, FILE_NAME, gpu_available))

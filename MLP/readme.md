@@ -96,3 +96,19 @@ weight_delay:1e-08
 ########## 最终训练结果 ##########
 train_loss:1.2006 train_accuracy:98.4749
 ```
+
+#### 2020-08-05-03 采用按比例取样，不使用dropout
+> 原始数据: data_cqt_new.csv
+> FILE_NAME = 'MLP_network_bs_32_epoch_1000_lr_small_bn_07.pkl'
+```text
+########## 最终k折交叉验证结果 ##########
+train_loss_sum:1.0544 train_accuracy_sum:99.2914
+ valid_loss_sum:1.1498 valid_accuracy_sum:89.5185
+learning_rate:0.001
+epoch_number:100
+batch_size:32
+weight_delay:0
+数据已经转化为gpu类型
+########## 最终训练结果 ##########
+train_loss:1.0497 train_accuracy:99.6077
+```
