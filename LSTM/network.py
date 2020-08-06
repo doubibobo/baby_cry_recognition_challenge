@@ -32,29 +32,21 @@ class CNNClassify(nn.Module):
         #       output-of-conv3 =====> batch_size, 32, 6, 26
         #       output-of-pool3 =====> batch_size, 32, 2, 26
         self.cnn = nn.Sequential(OrderedDict([
-            ("conv1", nn.Conv2d(input_channels, 16, kernel_size, stride, padding)),
+            ("conv1", nn.Conv2d(input_channels, 32, kernel_size, stride, padding)),
             ("relu1", nn.ReLU()),
-            ("pool1", nn.MaxPool2d(pool_size)),
-            ("conv2", nn.Conv2d(16, 32, kernel_size, stride, padding)),
+            ("conv2", nn.Conv2d(32, 64, kernel_size, stride, padding)),
             ("relu2", nn.ReLU()),
-            ("pool2", nn.MaxPool2d(pool_size))
+            ("pool1", nn.MaxPool2d(pool_size)),
+            ("dropout1", nn.Dropout(0.25))
         ]))
 
         # 全连接分类模块
         self.fully_connection = nn.Sequential(OrderedDict([
-            ("layer1", nn.Linear(32 * 18 * 15, 1024)),
-            ("batch_normalization1", nn.BatchNorm1d(1024)),
+            ("layer1", nn.Linear(64 * 18 * 26, 512)),
             ("ReLU1", nn.ReLU()),
-            ("layer2", nn.Linear(1024, 512)),
-            ("batch_normalization2", nn.BatchNorm1d(512)),
+            ("layer2", nn.Linear(512, 128)),
             ("ReLU2", nn.ReLU()),
-            ("layer3", nn.Linear(512, 256)),
-            ("batch_normalization3", nn.BatchNorm1d(256)),
-            ("ReLU3", nn.ReLU()),
-            ("layer4", nn.Linear(256, 64)),
-            ("batch_normalization4", nn.BatchNorm1d(64)),
-            ("ReLU4", nn.ReLU()),
-            ("layer5", nn.Linear(64, class_number)),
+            ("layer3", nn.Linear(128, class_number)),
             ("soft1", nn.Softmax()),
         ]))
         # # 全连接分类模块

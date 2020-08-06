@@ -3,7 +3,7 @@
 格式为： (file_path, file_label)
 """
 import os
-filePath = "/home/doubibobo/桌面/婴儿啼哭识别 挑战赛/data/original-data/"
+filePath = "/data/original-data/"
 
 
 def get_filename(selection):

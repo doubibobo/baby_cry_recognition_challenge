@@ -1,19 +1,10 @@
 from torch.autograd import Variable
-from torch.utils.data import Dataset, DataLoader
-from torchvision import models, datasets, transforms, utils
-from data.code.tools import build_file_index as bf
-from data.code.tools import data_analysis as da
-from data.code.tools import feature_extractor as fe
+from torch.utils.data import DataLoader
+from torchvision import models, datasets, transforms
 from data.code.tools.training_tools import gpu_selector as gs
 
-import torch.cuda as cuda
-import torch.nn as nn
-
-import numpy
 import torch
 import os
-import shutil
-import matplotlib.pyplot as plt
 import time
 
 # pre-trained为true，表示自动下载训练好的参数

@@ -5,7 +5,7 @@ import csv
 import os
 import pandas as pd
 
-import data.code.tools.build_file_index as bf
+import data.code.tools.feature_tools.build_file_index as bf
 
 "建立训练时的标签和语音类别的映射关系"
 classes_labels = ["awake", "diaper", "hug", "hungry", "sleepy", "uncomfortable"]
@@ -85,14 +85,15 @@ def signal_append(signal, sample_rate, signal_window):
     return signal
 
 
-def framing(signal, sample_rate, frame_window, shift_window, signal_window):
+def framing(signal, sample_rate, frame_window, shift_window, signal_window, hamming=False):
     """
-    进行语音的分帧操作
+    进行语音的分帧操作，如果hamming为True，则需要加hamming窗
     :param signal: 原始语音信号
     :param sample_rate: 采样率
     :param frame_window: 帧窗口，单位为ms
     :param shift_window: 步长窗口，单位为ms
     :param signal_window: 语音窗口，单位为ms
+    :param hamming: 是否要进行加窗操作，hamming加窗，默认为False
     :return: 经过分帧处理以后的数据帧
     """
     # 每一帧包含的样本数目，以及每隔多少个样本到下一帧
@@ -109,6 +110,9 @@ def framing(signal, sample_rate, frame_window, shift_window, signal_window):
     # TODO 此处应该改为舍弃，因为数据集中大量样本的最后一帧都是补充帧，对分类效果影响较大
     indexes = np.tile(np.arange(0, frame_length), (frame_numbers, 1)) + np.tile(
         np.arange(0, frame_numbers * step_length, step_length), (frame_length, 1)).T
+    # 进行hamming加窗操作
+    if hamming:
+        return padding_signal_length[indexes.astype(np.int32, copy=False)] * np.hamming(frame_length)
     return padding_signal_length[indexes.astype(np.int32, copy=False)]
 
 
@@ -152,13 +156,43 @@ def write_data_to_csv_file(header, indexes, filename, selection, to_frame=False)
         writer = csv.writer(file)
         writer.writerow(header)
         file.close()
+        # count = 0
         for key, value in indexes.items():
-            wav, sample_rate = librosa.load(bf.filePath + selection + "/" + (value if selection == "train" else "") +
-                                            "/" + (key if selection == "train" else os.path.split(key)[1]),
-                                            mono=True, duration=15)
+            # 获取样本的路径
+            file_path = bf.filePath + selection + "/" + (value if selection == "train" else "") + "/" + \
+                        (key if selection == "train" else os.path.split(key)[1])
+            wav, sample_rate = librosa.load(file_path, mono=True, duration=15)
+            # # 获取样本的长度
+            # length = librosa.get_duration(filename=file_path)
+            # # 判断是否有新的数据集
+            # if length < 20:
+            #     continue
+            # elif 20 <= length <= 30:
+            #     # 存储新的数据
+            #     wav, sample_rate = librosa.load(file_path, mono=True, offset=length-15, duration=15)
+            #     wavfile.write("../data/" + value + '/new_' + str(count) + '.wav', sample_rate, wav)
+            #     count = count + 1
+            # elif 30 < length <= 45:
+            #     wav_1, sample_rate = librosa.load(file_path, mono=True, offset=15, duration=15)
+            #     wav_2, _ = librosa.load(file_path, mono=True, offset=length-15, duration=15)
+            #     wavfile.write("../data/" + value + '/new_' + str(count) + '.wav', sample_rate, wav_1)
+            #     count = count + 1
+            #     wavfile.write("../data/" + value + '/new_' + str(count) + '.wav', sample_rate, wav_2)
+            #     count = count + 1
+            # else:
+            #     print(key + ' length is more than 45s!')
+            # continue
+            # 对语音数据进行预处理
+            wav = librosa.effects.preemphasis(wav)
+
             if to_frame:
-                frames = framing(wav, sample_rate, 0.02, 0.01, 15)
+                frames = framing(wav, sample_rate, 0.025, 0.01, 15, True)
             else:
+                # # 数据增强，进行Time Stretch变换、Pitch Shift变换、roll变换（滚动变换）
+                # wav_time_stretch = librosa.effects.time_stretch(wav, rate=1.2)
+                # wav_pitch_shift = librosa.effects.pitch_shift(wav, sample_rate, n_steps=3.0)
+                # wav_roll = np.roll(wav, sample_rate * 10)
+                # frames = [wav, wav_time_stretch, wav_pitch_shift, wav_roll]
                 frames = [wav]
             for i in range(len(frames)):
                 chroma_stft = librosa.feature.chroma_stft(y=frames[i], sr=sample_rate)
@@ -188,12 +222,13 @@ def write_data_to_csv_file(header, indexes, filename, selection, to_frame=False)
                     file.close()
 
 
-def write_result_to_csv(data_file, filename, results):
+def write_result_to_csv(data_file, filename, results, time_step=None):
     """
     输出测试集合的结果到csv
     :param filename: 文件名称
     :param data_file: 测试集
     :param results: 识别结果
+    :param time_step: 测试语音文件是否分帧（每一个语音文件含有的时间步），默认为None，不分帧。
     :return:
     """
     file = open(filename, 'w', newline='')
@@ -204,7 +239,8 @@ def write_result_to_csv(data_file, filename, results):
         data = pd.read_csv(data_file)
         wav_paths = data.iloc[:, [0]].T
         wav_paths = np.matrix.tolist(wav_paths)[0]
-
+        if time_step is not None:
+            wav_paths = wav_paths[0:len(wav_paths):time_step]
         print(wav_paths)
 
         dictionary = {}
