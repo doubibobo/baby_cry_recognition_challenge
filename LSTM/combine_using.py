@@ -17,7 +17,7 @@ INPUT_SIZE = 26
 HIDDEN_SIZE = 64
 OUTPUT_SIZE = 6
 WEIGHT_DELAY = 1e-8
-FILE_NAME = "combine_network_01.pkl"
+FILE_NAME = "combine_network_02.pkl"
 
 
 if __name__ == '__main__':
@@ -47,13 +47,13 @@ if __name__ == '__main__':
     network = [net.CombineClassify(INPUT_SIZE, HIDDEN_SIZE, 1, 1, OUTPUT_SIZE) for i in range(K)]
     # 训练网络
     tp.train_process(torch_data, torch_label, network, K, LEARNING_RATE, EPOCH_NUMBER, BATCH_SIZE,
-                     network_filename=FILE_NAME, gpu_available=gpu_available)
+                     weight_decay=WEIGHT_DELAY, network_filename=FILE_NAME, gpu_available=gpu_available)
     # 将所有数据投入到最终的神经网络进行训练
     final_network = net.CombineClassify(INPUT_SIZE, HIDDEN_SIZE, 1, 1, OUTPUT_SIZE)
     tp.train_final_network(final_network, torch_data, torch_label, LEARNING_RATE, EPOCH_NUMBER,
-                           weight_decay=WEIGHT_DELAY, batch_size=BATCH_SIZE, file_name=FILE_NAME)
+                           weight_decay=WEIGHT_DELAY, batch_size=BATCH_SIZE, file_name=FILE_NAME, gpu_available=True)
     # 进行测试集合的验证
     test_data, _ = da.csv_handle("../data/test_for_rnn.csv")
     test_data = torch.reshape(test_data, (-1, TIME_STEP, INPUT_SIZE))
-    fe.write_result_to_csv("../data/test_for_rnn.csv", "result/result_combine_01.csv",
+    fe.write_result_to_csv("../data/test_for_rnn.csv", "result/result_combine_02.csv",
                            tp.test_process(test_data, FILE_NAME, gpu_available))

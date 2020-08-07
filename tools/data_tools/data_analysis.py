@@ -113,12 +113,13 @@ def get_k_fold_data_by_proportion(k, label):
         remaining_k_chosen = random.sample(range(1, k), remaining_length)
         for j in range(len(remaining_k_chosen)):
             every_k_length[remaining_k_chosen[j]] = every_k_length[remaining_k_chosen[j]] + 1
+
         # 将每一类数据划分为k块
         for j in range(k):
             if j == 0:
                 index = slice(0, every_k_length[1])
             else:
-                index = slice(every_k_length[j-1], every_k_length[j])  # valid的索引
+                index = slice(sum(every_k_length[0: j]), sum(every_k_length[0: j+1]))  # valid的索引
             divided_list_index[j].extend(list_index[i][index])
     return divided_list_index
 

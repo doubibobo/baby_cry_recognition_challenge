@@ -33,17 +33,17 @@ class Network(nn.Module):
     def forward(self, x):
         x = self.layer1(x)
         x = self.layer1_bn(x)
-        x = self.drop1(x)
+        # x = self.drop1(x)
         x = functional.relu(x)
 
         x = self.layer2(x)
         x = self.layer2_bn(x)
-        x = self.drop2(x)
+        # x = self.drop2(x)
         x = functional.relu(x)
 
         x = self.layer3(x)
         x = self.layer3_bn(x)
-        x = self.drop3(x)
+        # x = self.drop3(x)
         x = functional.relu(x)
 
         x = self.layer4(x)
