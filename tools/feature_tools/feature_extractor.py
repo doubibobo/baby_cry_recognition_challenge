@@ -13,7 +13,7 @@ classes_labels = ["awake", "diaper", "hug", "hungry", "sleepy", "uncomfortable"]
 types = 'awake diaper hug hungry sleepy uncomfortable'.split()
 
 
-def extract_spectrogram(indexes, selection, spectrogram=True, directory="/image_data/"):
+def extract_spectrogram(indexes, selection, spectrogram=True, directory="image_data/"):
     """
     Extracting the Spectrogram for every video
     提取每条音频的频谱特征图
@@ -27,11 +27,11 @@ def extract_spectrogram(indexes, selection, spectrogram=True, directory="/image_
     plt.figure(figsize=(10, 10))
     # 创建对应类的频谱图文件夹
     for label in types:
-        if not os.path.exists(selection + directory):
-            os.makedirs(selection + directory)
-        if (selection == "train") and (not os.path.exists(selection + directory + label)):
-            os.makedirs(selection + directory + label)
-            print("the dir of " + selection + directory + label + " is created!")
+        if not os.path.exists(directory + selection):
+            os.makedirs(directory + selection)
+        if (selection == "train") and (not os.path.exists(directory + selection + '/' + label)):
+            os.makedirs(directory + selection + '/' + label)
+            print("the dir of " + directory + selection + '/' + label + " is created!")
         else:
             print("the dir is exists!")
 
@@ -40,13 +40,26 @@ def extract_spectrogram(indexes, selection, spectrogram=True, directory="/image_
         wav, sample_rate = librosa.load(((bf.filePath + selection + "/" + value + "/" + key) if selection == "train"
                                          else key), mono=True, duration=15)
         if spectrogram:
-            plt.specgram(wav, NFFT=2048, Fs=2, Fc=0, noverlap=128, cmap=c_map,
-                         sides='default', mode='default', scale='dB')
+            # 归一化语音数据，防止出现无效地方
+            wav = wav * 1.0 / max(abs(wav))
+            # 以25ms为一帧，以10ms作为步长，计算每一帧中的样本数目和重合的样本数
+            frame_length, overlap_length = int(round(0.025 * sample_rate)), int(round((0.025 - 0.010) * sample_rate))
+            plt.specgram(wav, NFFT=frame_length, Fs=sample_rate, Fc=0, noverlap=overlap_length, scale_by_freq=True,
+                         window=np.hamming(frame_length), sides='default', mode='default', scale='dB')
+            # plt.specgram(wav, NFFT=2048, Fs=2, Fc=0, noverlap=128, cmap=c_map,
+            #              sides='default', mode='default', scale='dB')
             plt.axis("off")
+
+            fig = plt.gcf()
             if selection == "train":
-                plt.savefig(selection + directory + value + "/" + key[: -3].replace(".", "") + ".png")
+                plt.ylabel('Frequency')
+                plt.xlabel('Time(s)')
+                # plt.title('Spectrogram')
+                plt.savefig(directory + selection + '/' + value + "/" + key[: -3].replace(".", "") + ".png",
+                            bbox_inches='tight', pad_inches=0, dpi=fig.dpi)
             elif selection == "test":
-                plt.savefig(selection + directory + os.path.split(key[:-3])[1] + "png")
+                plt.savefig(directory + selection + '/' + os.path.split(key[:-3])[1] + "png",
+                            bbox_inches='tight', pad_inches=0, dpi=fig.dpi)
             plt.clf()
         else:
             plt.plot(wav)
@@ -65,6 +78,16 @@ def extract_spectrogram(indexes, selection, spectrogram=True, directory="/image_
                             pad_inches=0.0)
             # plt.show()
             plt.close('all')
+
+
+def extract_spectrogram_mfcc(indexes, selection, directory="mfcc_data/"):
+    """
+    提取语音的mfcc特征图
+    :param indexes:
+    :param selection:
+    :param directory:
+    :return:
+    """
 
 
 def signal_append(signal, sample_rate, signal_window):

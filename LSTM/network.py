@@ -42,7 +42,7 @@ class CNNClassify(nn.Module):
 
         # 全连接分类模块
         self.fully_connection = nn.Sequential(OrderedDict([
-            ("layer1", nn.Linear(64 * 18 * 26, 512)),
+            ("layer1", nn.Linear(50176, 512)),
             ("ReLU1", nn.ReLU()),
             ("layer2", nn.Linear(512, 128)),
             ("ReLU2", nn.ReLU()),
