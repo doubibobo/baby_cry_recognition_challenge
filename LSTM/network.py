@@ -33,18 +33,24 @@ class CNNClassify(nn.Module):
         #       output-of-pool3 =====> batch_size, 32, 2, 26
         self.cnn = nn.Sequential(OrderedDict([
             ("conv1", nn.Conv2d(input_channels, 32, kernel_size, stride, padding)),
+            ("batch_norm_conv1", nn.BatchNorm2d(32)),
             ("relu1", nn.ReLU()),
             ("conv2", nn.Conv2d(32, 64, kernel_size, stride, padding)),
+            ("batch_norm_conv2", nn.BatchNorm2d(64)),
             ("relu2", nn.ReLU()),
             ("pool1", nn.MaxPool2d(pool_size)),
-            ("dropout1", nn.Dropout(0.25))
+            ("dropout1", nn.Dropout(0.5))
         ]))
 
         # 全连接分类模块
         self.fully_connection = nn.Sequential(OrderedDict([
-            ("layer1", nn.Linear(64 * 18 * 26, 512)),
+            ("layer1", nn.Linear(15936, 512)),
+            ("batch_norm1", nn.BatchNorm1d(512)),
+            ("dropout_norm_fully1", nn.Dropout(0.5)),
             ("ReLU1", nn.ReLU()),
             ("layer2", nn.Linear(512, 128)),
+            ("batch_norm2", nn.BatchNorm1d(128)),
+            ("dropout_norm_fully2", nn.Dropout(0.5)),
             ("ReLU2", nn.ReLU()),
             ("layer3", nn.Linear(128, class_number)),
             ("soft1", nn.Softmax()),

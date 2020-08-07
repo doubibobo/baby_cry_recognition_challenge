@@ -51,11 +51,11 @@ def train(network, data_train, label_train, data_validation, label_validation, l
     # 使用cross_entropy损失函数
     loss_function = nn.CrossEntropyLoss()
 
-    # # 使用Adam优化算法
-    # optimizer = torch.optim.Adam(params=network.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    # 使用Adam优化算法
+    optimizer = torch.optim.Adam(params=network.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
     # 使用改进的Adam_GC优化算法
-    optimizer = Adam_GCC.Adam_GC(params=network.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    # optimizer = Adam_GCC.Adam_GC(params=network.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
     # 动态调整学习率
     # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=200, gamma=0.1)
@@ -123,7 +123,7 @@ def train_process(data_train_input, label_train_input, network, k_number, learni
     accuracy_train_sum, accuracy_validation_sum = 0, 0
 
     # 进行交叉验证数据集的划分
-    divided_list_index = da.get_k_fold_data_by_proportion(k_number, label_train_input)
+    divided_list_index = da.get_k_fold_data_by_random(k_number, label_train_input)
 
     for i in range(k_number):
 
