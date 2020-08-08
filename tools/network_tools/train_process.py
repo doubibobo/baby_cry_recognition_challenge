@@ -93,9 +93,10 @@ def train(network, data_train, label_train, data_validation, label_validation, l
 
         # if data_validation is not None and loss_validation[-1][1] >= best_accuracy_validation:
         #     best_accuracy_validation = loss_validation[-1][1]
+        #     early_stop_epoch = 0
         # else:
         #     early_stop_epoch = early_stop_epoch + 1
-        # if early_stop_epoch >= 10:
+        # if early_stop_epoch >= 20 and epoch >= 50:
         #     break
 
     del data_train, label_train, data_validation, label_validation

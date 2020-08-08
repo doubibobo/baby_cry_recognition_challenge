@@ -1,7 +1,8 @@
 import cv2
 import os
 
-filePath = "/home/doubibobo/桌面/婴儿啼哭识别 挑战赛/data/code/LSTM/image_data/"
+# filePath = "/home/doubibobo/桌面/婴儿啼哭识别 挑战赛/data/code/LSTM/image_data/"
+filePath = "/home/doubibobo/桌面/婴儿啼哭识别 挑战赛/data/code/LSTM/mel_data/"
 filePathGray = "/home/doubibobo/桌面/婴儿啼哭识别 挑战赛/data/code/LSTM/image_data_gray/"
 
 

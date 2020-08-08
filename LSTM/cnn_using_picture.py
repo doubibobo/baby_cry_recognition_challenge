@@ -40,15 +40,15 @@ if __name__ == '__main__':
     # 打印神经网络的结构
     summary(network[0], (1, IMAGE_HEIGHT, IMAGE_WIDTH))
 
-    # # 将数据读入内存
-    # numpy_data, numpy_label = [], []
-    # for key, value in file_label_indexes.items():
-    #     image = Image.open(tg.filePathGray + "train/" + value + "/" + key)
-    #     numpy_data.append(numpy.asarray(image))
-    #     numpy_label.append(da.label_classes[value])
-    #
-    # torch_data, torch_label = torch.from_numpy(numpy.asarray(numpy_data)), torch.from_numpy(numpy.asarray(numpy_label))
-    #
+    # 将数据读入内存
+    numpy_data, numpy_label = [], []
+    for key, value in file_label_indexes.items():
+        image = Image.open(tg.filePathGray + "train/" + value + "/" + key)
+        numpy_data.append(numpy.asarray(image))
+        numpy_label.append(da.label_classes[value])
+
+    torch_data, torch_label = torch.from_numpy(numpy.asarray(numpy_data)), torch.from_numpy(numpy.asarray(numpy_label))
+
     # # 训练网络
     # tp.train_process(torch_data, torch_label, network, K, LEARNING_RATE, EPOCH_NUMBER, BATCH_SIZE,
     #                  network_filename=FILE_NAME, gpu_available=gpu_available)

@@ -1,4 +1,5 @@
 import librosa
+import librosa.display
 import numpy as np
 import matplotlib.pyplot as plt
 import csv
@@ -44,6 +45,9 @@ def extract_spectrogram(indexes, selection, spectrogram=True, directory="image_d
             wav = wav * 1.0 / max(abs(wav))
             # 以25ms为一帧，以10ms作为步长，计算每一帧中的样本数目和重合的样本数
             frame_length, overlap_length = int(round(0.025 * sample_rate)), int(round((0.025 - 0.010) * sample_rate))
+
+            # TODO 重要的是如何准确的设置参数
+
             plt.specgram(wav, NFFT=frame_length, Fs=sample_rate, Fc=0, noverlap=overlap_length, scale_by_freq=True,
                          window=np.hamming(frame_length), sides='default', mode='default', scale='dB')
             # plt.specgram(wav, NFFT=2048, Fs=2, Fc=0, noverlap=128, cmap=c_map,
@@ -80,14 +84,78 @@ def extract_spectrogram(indexes, selection, spectrogram=True, directory="image_d
             plt.close('all')
 
 
-def extract_spectrogram_mfcc(indexes, selection, directory="mfcc_data/"):
+def extract_spectrogram_mfcc(indexes, selection, directory="mel_data/"):
     """
-    提取语音的mfcc特征图
-    :param indexes:
-    :param selection:
-    :param directory:
-    :return:
+    提取语音的mfcc频谱图
+    :param indexes: 文件索引
+    :param selection: 选择train文件或者test文件
+    :param directory: 频谱图所在的根目录
+    :return: 无返回值
     """
+    for key, value in indexes.items():
+        # 加载15s的音频，转换为单声道（mono）
+        wav, sample_rate = librosa.load(((bf.filePath + selection + "/" + value + "/" + key) if selection == "train"
+                                         else key), mono=True, duration=15)
+        # 对语音数据进行预处理
+        wav = librosa.effects.preemphasis(wav)
+
+        # 以25ms为一帧，以10ms作为步长，计算每一帧中的样本数目和重合的样本数
+        frame_length, overlap_length = int(round(0.025 * sample_rate)), int(round((0.025 - 0.010) * sample_rate))
+        step_length = int(round((0.010 * sample_rate)))
+
+        # 提取mel spectrogram 图（梅尔频谱图【功率图】和频谱图【功率图】是一致的，只不过尺度发生了变换，
+        # 默认画的是梅尔频谱功率图
+        mel_power_spectrogram_feature = librosa.feature.melspectrogram(wav, sr=sample_rate, n_fft=frame_length,
+                                                                 hop_length=step_length, win_length=frame_length,
+                                                                 window='hamm', n_mels=128)
+        # 转换为对数刻度，因为log运算的存在
+        # 如果ref为1，转换公式相当于： log_mel_spectrogram_feature = 20 * log10(mel_spectrogram_feature)
+        # 但还是相当于计算了某种功率
+        log_mel_spectrogram_feature = librosa.power_to_db(mel_power_spectrogram_feature)
+
+        # 绘制Mel频谱图
+        plt.figure(figsize=(12, 4))
+        librosa.display.specshow(log_mel_spectrogram_feature, sr=sample_rate, x_axis='time', y_axis='mel')
+        # librosa.display.specshow(log_mel_spectrogram_feature, sr=sample_rate)
+        plt.axis("off")
+        fig = plt.gcf()
+        # plt.title('Mel power spectrogram ')
+        # plt.colorbar(format='%+02.0f dB')
+        # plt.tight_layout()
+
+        # # plt.show(bbox_inches='tight', pad_inches=0)
+        # plt.savefig(directory + selection + '/' + value + "/" + key[: -3].replace(".", "") + ".png",
+        #             bbox_inches='tight', pad_inches=0, dpi=fig.dpi)
+        if selection == "test":
+            plt.savefig(directory + selection + '/' + os.path.split(key[: -3])[1] + "png", bbox_inches='tight',
+                        pad_inches=0.0)
+        plt.clf()
+
+        # # 绘制MFCC系数图
+        # mfcc = librosa.feature.mfcc(S=log_mel_spectrogram_feature, n_mfcc=20)
+        #
+        # # Let's pad on the first and second deltas while we're at it
+        # # delta2_mfcc = librosa.feature.delta(mfcc, order=2)
+        #
+        # plt.figure(figsize=(12, 4))
+        # # librosa.display.specshow(delta2_mfcc)
+        # librosa.display.specshow(mfcc)
+        # plt.axis("off")
+        # fig = plt.gcf()
+        # plt.savefig(directory + selection + '/' + value + "/" + key[: -3].replace(".", "") + ".png",
+        #             bbox_inches='tight', pad_inches=0, dpi=fig.dpi)
+        # plt.clf()
+
+        # plt.ylabel('MFCC coefficients')
+        # plt.xlabel('Time')
+        # plt.axis()
+        #
+        # plt.title('MFCC')
+        # plt.colorbar()
+        # plt.tight_layout()
+        # plt.show()
+        # print(key)
+        # break
 
 
 def signal_append(signal, sample_rate, signal_window):
@@ -152,12 +220,12 @@ def extract_features(to_frame=False):
     :return: csv文件头
     """
     header = 'filename chroma_stft rms spectral_centroid spectral_bandwidth rolloff zero_crossing_rate'
-    for i in range(1, 21):
+    for i in range(1, 129):
         header += f' mfcc{i}'
     # for i in range(1, 21):
     #     header += f' delta{i}'
-    for i in range(1, 13):
-        header += f' cqt{i}'
+    # for i in range(1, 13):
+    #     header += f' cqt{i}'
     header += ' label'
     if to_frame:
         header += ' frame_number'
@@ -224,8 +292,8 @@ def write_data_to_csv_file(header, indexes, filename, selection, to_frame=False)
                 spec_bw = librosa.feature.spectral_bandwidth(y=frames[i], sr=sample_rate)
                 rolloff = librosa.feature.spectral_rolloff(y=frames[i], sr=sample_rate)
                 zcr = librosa.feature.zero_crossing_rate(y=frames[i])
-                mfcc = librosa.feature.mfcc(y=frames[i], sr=sample_rate)
-                cqt = librosa.feature.chroma_cqt(y=frames[i], sr=sample_rate)
+                mfcc = librosa.feature.mfcc(y=frames[i], sr=sample_rate, n_mfcc=128)
+                # cqt = librosa.feature.chroma_cqt(y=frames[i], sr=sample_rate)
                 # deltas = librosa.feature.delta(mfcc)
                 to_append = f'{(key if selection == "train" else os.path.split(key)[1])} {np.mean(chroma_stft)} ' \
                             f'{np.mean(rms)} {np.mean(spec_cent)} {np.mean(spec_bw)} {np.mean(rolloff)} {np.mean(zcr)} '
@@ -233,8 +301,8 @@ def write_data_to_csv_file(header, indexes, filename, selection, to_frame=False)
                     to_append += f' {np.mean(e)}'
                 # for e in deltas:
                 #     to_append += f' {np.mean(e)}'
-                for e in cqt:
-                    to_append += f' {np.mean(e)}'
+                # for e in cqt:
+                #     to_append += f' {np.mean(e)}'
                 to_append += f' {value}'
                 if to_frame:
                     to_append += f' {i}'
