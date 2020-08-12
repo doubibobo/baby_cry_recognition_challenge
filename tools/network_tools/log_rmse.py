@@ -23,7 +23,7 @@ def log_rmse(flag, network, x, y, loss_function, epoch=99):
 
     # 计算每个类别的准确率
     if flag and epoch % 99 == 0 and epoch != 0:
-        # sc.counter_statistics(result.data.cpu())
+        # sc.counter_statistics(result.csv_data.cpu())
         pass
     accuracy = corrects * 100 / len(y)
     loss = loss_function(output, y)

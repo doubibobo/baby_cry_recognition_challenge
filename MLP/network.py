@@ -28,22 +28,22 @@ class Network(nn.Module):
         self.layer4_bn = batch_normalization_layer(output_dim)
         self.drop1 = nn.Dropout(0.2)
         self.drop2 = nn.Dropout(0.2)
-        self.drop3 = nn.Dropout(0.5)
+        self.drop3 = nn.Dropout(0.2)
 
     def forward(self, x):
         x = self.layer1(x)
         x = self.layer1_bn(x)
-        # x = self.drop1(x)
+        x = self.drop1(x)
         x = functional.relu(x)
 
         x = self.layer2(x)
         x = self.layer2_bn(x)
-        # x = self.drop2(x)
+        x = self.drop2(x)
         x = functional.relu(x)
 
         x = self.layer3(x)
         x = self.layer3_bn(x)
-        # x = self.drop3(x)
+        x = self.drop3(x)
         x = functional.relu(x)
 
         x = self.layer4(x)

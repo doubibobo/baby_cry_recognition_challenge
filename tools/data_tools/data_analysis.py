@@ -8,7 +8,7 @@ label_classes = {"awake": 0, "diaper": 1, "hug": 2,
                  "hungry": 3, "sleepy": 4, "uncomfortable": 5}
 
 "明确整个数据集中，各个类型的数量及总数量"
-number_classes = [1053, 845, 1272, 1146, 1028, 1037]
+number_classes = [0, 0, 0, 0, 0, 0]
 sum_number = sum(number_classes)
 expect_proportion = [number_classes[i] / sum_number for i in range(len(number_classes))]
 
@@ -25,29 +25,23 @@ def csv_handle(filename, another_file=None, is_test=False):
         labels: 标签
     """
     # 设置初始值
-    file_name_col, frame_number_col = None, None
     data = pd.read_csv(filename)
 
     if another_file is not None:
         data_another = pd.read_csv(another_file)
         # 两个csv文件的行列进行首尾拼接
         data = pd.concat([data, data_another], axis=0)
-        # 提取最后一列帧的序号
-        frame_number_col = data['frame_number'].copy()
 
     # 提取第一列的文件名
     file_name_col = data['filename'].copy()
 
     # 删除对训练数据无用的列，文件名只是训练时的标志序号
     data = data.drop(['filename'], axis=1)
-    # 删除对训练数据无用的列，frame_number只是训练时的标志序号
 
-    # if another_file is not None or not is_test:
-    #     data = data.drop(['frame_number'], axis=1)
-
-    # 对标签进行编码，用iloc函数提取最后一列[:, -1]，如果是取除最后一列以外的所有列[:, :-1]
-    type_list = data.iloc[:, -1]
-    labels = [label_classes.get(genre_list) for genre_list in type_list]
+    # 对标签进行编码，用iloc函数提取最后一列[:, -1]，如果是去除最后一列以外的所有列[:, :-1]
+    labels = [label_classes.get(genre_list) for genre_list in data.iloc[:, -1]]
+    number = [number_classes[label] + 1 for label in labels]
+    print(number)
 
     # 预处理数据：去均值和方差规模化，即将特征数据的分布调整成标准正态分布（高斯分布），使得数据的均值为0,方差为1
     torch_data = torch.from_numpy(numpy.array(data.iloc[:, :-1], dtype=float))
@@ -69,7 +63,7 @@ def get_k_fold_data_by_random(k, label):
     :arg
         k: 折的数目
         number: 第几折
-        data: 数据集
+        csv_data: 数据集
         y: 标签
     :return divided_list_index
     """
@@ -139,7 +133,7 @@ def get_k_fold_data(k, number, data, label, divided_list_index):
         #  这里的K折交叉验证好菜，没有考虑数据集平衡的问题，就是非常单纯的做了数据划分，啊噗
         #  问题：每次生成的验证集最多含有两类数据，且被大批量取出来的类别的训练集数目会减少很多，导致训练失衡
         #  思路：生成一个随机数种子seed，将其取值范围重置为0-K
-        #  结果：index = [i for i in range(len(data))] index[0:len(index):K]
+        #  结果：index = [i for i in range(len(csv_data))] index[0:len(index):K]
         #  anyway, 第69行已经将list_index打乱了
         data_part, label_part = data[divided_list_index[i], :], label[divided_list_index[i]]
         if i == number:

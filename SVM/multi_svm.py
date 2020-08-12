@@ -36,7 +36,7 @@ class MultiSVM:
     # def gpu_convert(self):
     #     if self.gpu_available:
     #         self.classes_number = self.classes_number.cuda()
-    #         self.data = self.data.cuda()
+    #         self.csv_data = self.csv_data.cuda()
     #         self.label = self.label.cuda()
     #         self.sigma = self.sigma.cuda()
     #         self.svm_number = self.svm_number.cuda()

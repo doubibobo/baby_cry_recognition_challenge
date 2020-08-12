@@ -450,7 +450,7 @@ class AdamW(Optimizer):
                 state['step'] += 1
 
                 # if group['weight_decay'] != 0:
-                #     grad = grad.add(group['weight_decay'], p.data)
+                #     grad = grad.add(group['weight_decay'], p.csv_data)
 
                 # Decay the first and second moment running average coefficient
                 exp_avg.mul_(beta1).add_(1 - beta1, grad)
@@ -467,7 +467,7 @@ class AdamW(Optimizer):
                 bias_correction2 = 1 - beta2 ** state['step']
                 step_size = group['lr'] * math.sqrt(bias_correction2) / bias_correction1
 
-                # p.data.addcdiv_(-step_size, exp_avg, denom)
+                # p.csv_data.addcdiv_(-step_size, exp_avg, denom)
                 p.data.add_(-step_size,  torch.mul(p.data, group['weight_decay']).addcdiv_(1, exp_avg, denom) )
 
         return loss
@@ -557,7 +557,7 @@ class AdamW_GCC(Optimizer):
                 state['step'] += 1
 
                 # if group['weight_decay'] != 0:
-                #     grad = grad.add(group['weight_decay'], p.data)
+                #     grad = grad.add(group['weight_decay'], p.csv_data)
 
                 # Decay the first and second moment running average coefficient
                 exp_avg.mul_(beta1).add_(1 - beta1, grad)
@@ -574,7 +574,7 @@ class AdamW_GCC(Optimizer):
                 bias_correction2 = 1 - beta2 ** state['step']
                 step_size = group['lr'] * math.sqrt(bias_correction2) / bias_correction1
 
-                # p.data.addcdiv_(-step_size, exp_avg, denom)
+                # p.csv_data.addcdiv_(-step_size, exp_avg, denom)
                 p.data.add_(-step_size,  torch.mul(p.data, group['weight_decay']).addcdiv_(1, exp_avg, denom) )
 
         return loss
@@ -663,7 +663,7 @@ class AdamW_GCC2(Optimizer):
                 state['step'] += 1
 
                 # if group['weight_decay'] != 0:
-                #     grad = grad.add(group['weight_decay'], p.data)
+                #     grad = grad.add(group['weight_decay'], p.csv_data)
 
                 # Decay the first and second moment running average coefficient
                 exp_avg.mul_(beta1).add_(1 - beta1, grad)

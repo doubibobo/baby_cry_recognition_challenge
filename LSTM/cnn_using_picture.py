@@ -27,7 +27,7 @@ FILE_NAME = "model/cnn_model_image_01.pkl"
 
 if __name__ == '__main__':
     # 建立训练集文件路径与标签的索引
-    file_label_indexes = bf.get_filename("train", tg.filePathGrayServer)
+    file_label_indexes = bf.get_filename("train", tg.fileOriginGrayPath)
     print(file_label_indexes)
 
     # 使用gpu进行训练
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     # 将数据读入内存
     numpy_data, numpy_label = [], []
     for key, value in file_label_indexes.items():
-        image = Image.open(tg.filePathGrayServer + "train/" + value + "/" + key)
+        image = Image.open(tg.fileOriginGrayPath + "train/" + value + "/" + key)
         image = image.resize((300, 300), Image.ANTIALIAS)
         numpy_data.append(numpy.asarray(image))
         numpy_label.append(da.label_classes[value])

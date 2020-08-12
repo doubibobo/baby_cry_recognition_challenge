@@ -96,9 +96,9 @@ class SVM:
 
     def is_satisfy_ktt(self, i):
         """
-        判断第i个alpha(data)是否满足KTT条件
+        判断第i个alpha(csv_data)是否满足KTT条件
         是SMO算法的第一个变量选择过程
-        :param i alpha(data)的下标
+        :param i alpha(csv_data)的下标
         :return:
             True ： 满足
             False ： 不满足
@@ -232,7 +232,7 @@ class SVM:
         """
         单独计算核函数
         :param x1: 支持向量
-        :param x2: 戴判别向量
+        :param x2: 待判别向量
         :return: 计算结果
         """
         return np.exp((-1 * (np.linalg.norm((x1.double() - x2.double())))) / (2 * self.sigma ** 2))

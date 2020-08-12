@@ -39,7 +39,7 @@ if __name__ == '__main__':
     gpu_available = gs.gpu_selector()
 
     # 读取数据，并进行数据的重塑
-    torch_data, torch_label = da.csv_handle("../data/data_for_rnn_1.csv", "../data/data_for_rnn.csv")
+    torch_data, torch_label = da.csv_handle("../data/csv_data/data_for_rnn_1.csv", "../data/csv_data/data_for_rnn.csv")
     torch_data = torch.reshape(torch_data, (-1, TIME_STEP, INPUT_SIZE))
     torch_label = torch_label[0:len(torch_label):TIME_STEP]
     print(torch_data.shape)
@@ -53,7 +53,7 @@ if __name__ == '__main__':
     tp.train_final_network(final_network, torch_data, torch_label, LEARNING_RATE, EPOCH_NUMBER,
                            weight_decay=WEIGHT_DELAY, batch_size=BATCH_SIZE, file_name=FILE_NAME, gpu_available=True)
     # 进行测试集合的验证
-    test_data, _ = da.csv_handle("../data/test_for_rnn.csv")
+    test_data, _ = da.csv_handle("../data/csv_data/test_for_rnn.csv")
     test_data = torch.reshape(test_data, (-1, TIME_STEP, INPUT_SIZE))
-    fe.write_result_to_csv("../data/test_for_rnn.csv", "result/result_combine_02.csv",
+    fe.write_result_to_csv("../data/csv_data/test_for_rnn.csv", "result/result_combine_02.csv",
                            tp.test_process(test_data, FILE_NAME, gpu_available))

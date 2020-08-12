@@ -22,22 +22,6 @@ FILE_NAME = "model/cnn_model_01.pkl"
 
 
 if __name__ == '__main__':
-    # # 输出csv文件的表头
-    # headers = fe.extract_features(to_frame=True)
-    #
-    # # 建立训练集文件路径与标签的索引
-    # file_label_indexes = bf.get_filename("train")
-    # print(file_label_indexes)
-    # # 进行训练集的特征提取，并将其写入csv文件中。
-    # # 进行训练集的特征提取，并将其写入csv文件中。
-    # fe.write_data_to_csv_file(headers, file_label_indexes, "../data/data_for_cnn_25ms_10ms.csv", "train", to_frame=True)
-    #
-    # # 建立测试集文件路径与标签的索引
-    # test_label_indexes = bf.get_filename("test")
-    # print(test_label_indexes)
-    # # 进行测试集的特征提取，并将其写入csv文件中
-    # fe.write_data_to_csv_file(headers, test_label_indexes, "../data/test_for_cnn_25ms_10ms.csv", "test", to_frame=True)
-
     # 使用gpu进行训练
     gpu_available = gs.gpu_selector()
 
@@ -61,7 +45,7 @@ if __name__ == '__main__':
                            weight_decay=WEIGHT_DELAY, batch_size=BATCH_SIZE, file_name=FILE_NAME)
 
     # 进行测试集合的验证
-    test_data, file_name_col, _, _ = da.csv_handle("../data/test_for_rnn.csv", is_test=True)
+    test_data, file_name_col, _, _ = da.csv_handle("../data/csv_data/test_for_rnn.csv", is_test=True)
     test_data = torch.reshape(test_data, (-1, TIME_STEP, INPUT_SIZE))
-    fe.write_result_to_csv("../data/test_for_rnn.csv", "result/result_cnn_01.csv",
+    fe.write_result_to_csv("../data/csv_data/test_for_rnn.csv", "result/result_cnn_01.csv",
                            tp.test_process(test_data, FILE_NAME, gpu_available), TIME_STEP)
