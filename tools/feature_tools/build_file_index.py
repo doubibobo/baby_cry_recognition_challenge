@@ -3,19 +3,20 @@
 格式为： (file_path, file_label)
 """
 import os
-filePath = "/data/original-data/"
+filePath = "/home/doubibobo/桌面/婴儿啼哭识别 挑战赛/data/original-data/"
 
 
-def get_filename(selection):
+def get_filename(selection, file=filePath):
     """
     获取音频文件
     :param selection: 选择使用哪个文件夹，可选择test和train两个
+    :param file： 数据的根目录，默认为origin-data
     :return: 字典列表
     """
-    label_directory = os.listdir(filePath + selection)
+    label_directory = os.listdir(file + selection)
     dictionary = {}
     for i in range(len(label_directory)):
-        son_file_path = filePath + selection + "/" + label_directory[i]
+        son_file_path = file + selection + "/" + label_directory[i]
         if selection == "train":
             dictionary[label_directory[i]] = os.listdir(son_file_path)
         elif selection == "test":

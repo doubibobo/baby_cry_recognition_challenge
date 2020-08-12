@@ -85,7 +85,7 @@ def train(network, data_train, label_train, data_validation, label_validation, l
         #     optimizer.step()
         # 得到每个epoch的 loss 和 accuracy
         # print("epoch is ", epoch)
-        loss_train.append(log_rmse(False, network, dataset.x_data, dataset.y_data, loss_function))
+        loss_train.append(log_rmse(False, network, dataset.x_data, dataset.y_data, loss_function, epoch))
 
         if data_validation is not None:
             loss_validation.append(log_rmse(True, network, data_validation, label_validation, loss_function, epoch))
@@ -207,8 +207,10 @@ def test_process(data_test, network_filename="net.pkl", gpu_available=False):
         network = network.cuda()
         data_test = data_test.cuda()
     prediction = network(data_test.float())
+    maxing = torch.max(prediction, 1)
     result = torch.max(prediction, 1)[1]
+
     # if gpu_available:
     #     return result.cpu()
     # return result
-    return result
+    return prediction

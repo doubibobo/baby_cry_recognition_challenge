@@ -13,7 +13,7 @@ classes_labels = ["awake", "diaper", "hug", "hungry", "sleepy", "uncomfortable"]
 types = 'awake diaper hug hungry sleepy uncomfortable'.split()
 
 
-def extract_spectrogram(indexes, selection, spectrogram=True, directory="/image_data/"):
+def extract_spectrogram(indexes, selection, spectrogram=True, directory="image_data/"):
     """
     Extracting the Spectrogram for every video
     提取每条音频的频谱特征图
@@ -27,11 +27,11 @@ def extract_spectrogram(indexes, selection, spectrogram=True, directory="/image_
     plt.figure(figsize=(10, 10))
     # 创建对应类的频谱图文件夹
     for label in types:
-        if not os.path.exists(selection + directory):
-            os.makedirs(selection + directory)
-        if (selection == "train") and (not os.path.exists(selection + directory + label)):
-            os.makedirs(selection + directory + label)
-            print("the dir of " + selection + directory + label + " is created!")
+        if not os.path.exists(directory + selection):
+            os.makedirs(directory + selection)
+        if (selection == "train") and (not os.path.exists(directory + selection + '/' + label)):
+            os.makedirs(directory + selection + '/' + label)
+            print("the dir of " + directory + selection + '/' + label + " is created!")
         else:
             print("the dir is exists!")
 
@@ -40,13 +40,26 @@ def extract_spectrogram(indexes, selection, spectrogram=True, directory="/image_
         wav, sample_rate = librosa.load(((bf.filePath + selection + "/" + value + "/" + key) if selection == "train"
                                          else key), mono=True, duration=15)
         if spectrogram:
-            plt.specgram(wav, NFFT=2048, Fs=2, Fc=0, noverlap=128, cmap=c_map,
-                         sides='default', mode='default', scale='dB')
+            # 归一化语音数据，防止出现无效地方
+            wav = wav * 1.0 / max(abs(wav))
+            # 以25ms为一帧，以10ms作为步长，计算每一帧中的样本数目和重合的样本数
+            frame_length, overlap_length = int(round(0.025 * sample_rate)), int(round((0.025 - 0.010) * sample_rate))
+            plt.specgram(wav, NFFT=frame_length, Fs=sample_rate, Fc=0, noverlap=overlap_length, scale_by_freq=True,
+                         window=np.hamming(frame_length), sides='default', mode='default', scale='dB')
+            # plt.specgram(wav, NFFT=2048, Fs=2, Fc=0, noverlap=128, cmap=c_map,
+            #              sides='default', mode='default', scale='dB')
             plt.axis("off")
+
+            fig = plt.gcf()
             if selection == "train":
-                plt.savefig(selection + directory + value + "/" + key[: -3].replace(".", "") + ".png")
+                plt.ylabel('Frequency')
+                plt.xlabel('Time(s)')
+                # plt.title('Spectrogram')
+                plt.savefig(directory + selection + '/' + value + "/" + key[: -3].replace(".", "") + ".png",
+                            bbox_inches='tight', pad_inches=0, dpi=fig.dpi)
             elif selection == "test":
-                plt.savefig(selection + directory + os.path.split(key[:-3])[1] + "png")
+                plt.savefig(directory + selection + '/' + os.path.split(key[:-3])[1] + "png",
+                            bbox_inches='tight', pad_inches=0, dpi=fig.dpi)
             plt.clf()
         else:
             plt.plot(wav)
@@ -65,6 +78,16 @@ def extract_spectrogram(indexes, selection, spectrogram=True, directory="/image_
                             pad_inches=0.0)
             # plt.show()
             plt.close('all')
+
+
+def extract_spectrogram_mfcc(indexes, selection, directory="mfcc_data/"):
+    """
+    提取语音的mfcc特征图
+    :param indexes:
+    :param selection:
+    :param directory:
+    :return:
+    """
 
 
 def signal_append(signal, sample_rate, signal_window):
@@ -222,7 +245,7 @@ def write_data_to_csv_file(header, indexes, filename, selection, to_frame=False)
                     file.close()
 
 
-def write_result_to_csv(data_file, filename, results, time_step=None):
+def write_result_to_csv(data_file, filename, results, time_step=None, final=None):
     """
     输出测试集合的结果到csv
     :param filename: 文件名称
@@ -243,6 +266,9 @@ def write_result_to_csv(data_file, filename, results, time_step=None):
             wav_paths = wav_paths[0:len(wav_paths):time_step]
         print(wav_paths)
 
+        if final is not None:
+            wav_paths = final
+
         dictionary = {}
         print(len(results))
         print(results)
@@ -255,3 +281,23 @@ def write_result_to_csv(data_file, filename, results, time_step=None):
                 writer = csv.writer(file)
                 writer.writerow(to_append.split())
                 file.close()
+
+
+def write_valid_dataset_csv(file_path, filename, outputs, results, newline=''):
+    """
+    记录k折交叉验证时，各次验证的具体输出
+    :param file_path: file的根目录
+    :param filename: 文件名称
+    :param outputs: 神经网络模型的输入
+    :param results: 神经网络给出的判定结果
+    :param newline: 新的一行数据
+    :return 无返回值
+    """
+    file = open(file_path + filename, 'a', newline=newline)
+    with file:
+        for i in range(len(outputs)):
+            to_append = f'{results[i]} '
+            for j in range(len(outputs[i])):
+                to_append += f'{outputs[i][j]} '
+            writer = csv.writer(file)
+            writer.writerow(to_append.split())

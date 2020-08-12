@@ -8,7 +8,7 @@ label_classes = {"awake": 0, "diaper": 1, "hug": 2,
                  "hungry": 3, "sleepy": 4, "uncomfortable": 5}
 
 "明确整个数据集中，各个类型的数量及总数量"
-number_classes = [160, 134, 160, 160, 144, 160]
+number_classes = [1053, 845, 1272, 1146, 1028, 1037]
 sum_number = sum(number_classes)
 expect_proportion = [number_classes[i] / sum_number for i in range(len(number_classes))]
 
@@ -42,8 +42,8 @@ def csv_handle(filename, another_file=None, is_test=False):
     data = data.drop(['filename'], axis=1)
     # 删除对训练数据无用的列，frame_number只是训练时的标志序号
 
-    if another_file is not None or is_test:
-        data = data.drop(['frame_number'], axis=1)
+    # if another_file is not None or not is_test:
+    #     data = data.drop(['frame_number'], axis=1)
 
     # 对标签进行编码，用iloc函数提取最后一列[:, -1]，如果是取除最后一列以外的所有列[:, :-1]
     type_list = data.iloc[:, -1]
@@ -57,7 +57,7 @@ def csv_handle(filename, another_file=None, is_test=False):
     torch_data /= x_standard
 
     if is_test:
-        return torch_data, torch.from_numpy(numpy.array(labels)), file_name_col, frame_number_col
+        return torch_data, file_name_col
     else:
         return torch_data, torch.from_numpy(numpy.array(labels))
 
