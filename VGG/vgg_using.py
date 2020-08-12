@@ -35,13 +35,13 @@ if __name__ == '__main__':
     # # # 获取频谱图
     # # fe.extract_spectrogram(file_label_indexes, "test", False, FILE_INPUT)
     # # 将字典数据转化为列表元素
-    # data, label = [], []
+    # csv_data, label = [], []
     # for key, value in file_label_indexes.items():
-    #     data.append(key[:-3] + 'png')
+    #     csv_data.append(key[:-3] + 'png')
     #     label.append(label_encode.get(value))
 
     # # 划分训练集,测试集(按照7:3的比例划分),得到list形式
-    # data_train, label_train, data_test, label_test = da.split_train_test(data, label)
+    # data_train, label_train, data_test, label_test = da.split_train_test(csv_data, label)
 
     # 移动文件,在train文件夹中明确划分data_train和data_test
     # if not os.path.exists(path + 'data_train'):

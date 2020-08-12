@@ -13,7 +13,7 @@ K = 10
 EPOCH_NUMBER = 1000
 LEARNING_RATE = 0.001
 BATCH_SIZE = 32
-TIME_STEP = 1502
+TIME_STEP = 201
 INPUT_SIZE = 26
 HIDDEN_SIZE = 64
 OUTPUT_SIZE = 6
@@ -21,34 +21,10 @@ FILE_NAME = "model/LSTM_network_04.pkl"
 
 
 if __name__ == '__main__':
-    # 建立文件路径与标签的索引
-    file_label_indexes = bf.get_filename("train")
-    print(file_label_indexes)
-
-    tool_dictionary = file_label_indexes.copy()
-
-    # # 重新整合一边file_label_indexes，因为有不足15秒的数据导致程序异常
-    # for key, value in file_label_indexes.items():
-    #     if key != "hug_1.wav":
-    #         tool_dictionary.pop(key)
-    #         continue
-    #     else:
-    #         break
-
-    print(tool_dictionary)
-
-    # 进行训练集的特征提取，并将其写入csv文件中。
-    headers = fe.extract_features(to_frame=True)
-    fe.write_data_to_csv_file(headers, tool_dictionary, "../data/data_for_rnn_extend.csv", "train", to_frame=True)
-
-    # 进行测试集的特征提取，并将其写入csv文件中。
-    test_label_indexes = bf.get_filename("test")
-    fe.write_data_to_csv_file(headers, test_label_indexes, "../data/test_for_rnn_extend.csv", "test", to_frame=True)
-
     gpu_available = gs.gpu_selector()
 
     # 读取数据，并进行数据的重塑
-    torch_data, torch_label = da.csv_handle("../data/data_for_rnn_1.csv", "../data/data_for_rnn.csv")
+    torch_data, torch_label = da.csv_handle("../data/csv_data/train_mfcc_20_new_2s_time.csv")
     torch_data = torch.reshape(torch_data, (-1, TIME_STEP, INPUT_SIZE))
     torch_label = torch_label[0:len(torch_label):TIME_STEP]
 
@@ -63,7 +39,7 @@ if __name__ == '__main__':
     tp.train_process(torch_data, torch_label, network, K, LEARNING_RATE, EPOCH_NUMBER, BATCH_SIZE,
                      network_filename=FILE_NAME, gpu_available=gpu_available)
     # # 进行测试集合的验证
-    # test_data, file_name_col, _, _ = da.csv_handle("../data/test_for_rnn.csv", is_test=True)
+    # test_data, file_name_col, _, _ = da.csv_handle("../csv_data/test_for_rnn.csv", is_test=True)
     # test_data = torch.reshape(test_data, (-1, TIME_STEP, INPUT_SIZE))
-    # fe.write_result_to_csv("../data/test_for_rnn.csv", "../data/result.csv",
+    # fe.write_result_to_csv("../csv_data/test_for_rnn.csv", "../csv_data/result.csv",
     #                        tp.test_process(test_data, FILE_NAME, gpu_available), TIME_STEP)

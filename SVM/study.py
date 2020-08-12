@@ -15,7 +15,7 @@ def create_data():
     数据集包含了四个特征：花萼长度,花萼宽度,花瓣长度,花瓣宽度
     共有三种不同种类的鸢尾花，包括：setosa, versicolor, virginica
     iris的内容：
-        data ： 鸢尾花样本数据
+        csv_data ： 鸢尾花样本数据
         target ： 目标分类结果
         target_names ： 目标分类结果名称
         feature_names : 目标特征的名称

@@ -3,14 +3,14 @@
 格式为： (file_path, file_label)
 """
 import os
-filePath = "/home/doubibobo/桌面/婴儿啼哭识别 挑战赛/data/original-data/"
+filePath = "/home/doubibobo/桌面/婴儿啼哭识别 挑战赛/data/code/data/wav_data/original-data/"
 
 
 def get_filename(selection, file=filePath):
     """
     获取音频文件
     :param selection: 选择使用哪个文件夹，可选择test和train两个
-    :param file： 数据的根目录，默认为origin-data
+    :param file： 数据的根目录，默认为origin-csv_data
     :return: 字典列表
     """
     label_directory = os.listdir(file + selection)

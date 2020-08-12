@@ -84,7 +84,7 @@ def test_processing(data_test):
 
 if __name__ == '__main__':
     time_start = time.time()
-    torch_data, torch_label = csv_handle("../data/data_extend.csv")
+    torch_data, torch_label = csv_handle("../data/csv_data/data_extend.csv")
     # 进行训练
     train_processing(torch_data, torch_label)
     # # 进行测试集合的验证

@@ -182,7 +182,7 @@ class SGDW(Optimizer):
 
                 old = torch.clone(p.data).detach()
                 #if weight_decay != 0:
-                #    d_p.add_(weight_decay, p.data)
+                #    d_p.add_(weight_decay, p.csv_data)
                 if momentum != 0:
                     param_state = self.state[p]
                     if 'momentum_buffer' not in param_state:
@@ -249,7 +249,7 @@ class SGDW_GCC(Optimizer):
 
                 old = torch.clone(p.data).detach()
                 #if weight_decay != 0:
-                #    d_p.add_(weight_decay, p.data)
+                #    d_p.add_(weight_decay, p.csv_data)
                 
                 #GC operation for Conv layers
                 if len(list(d_p.size()))>3:
