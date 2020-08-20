@@ -1,9 +1,14 @@
+import shutil
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from torchvision import models, datasets, transforms
+from data.code.tools.feature_tools import build_file_index as bf
+from data.code.tools.data_tools import data_analysis as da
 from data.code.tools.training_tools import gpu_selector as gs
+from data.code.tools.image_tools import to_gray as tg
 
 import torch
+import torch.nn
 import os
 import time
 
@@ -12,8 +17,8 @@ model = models.vgg16(pretrained=True)
 
 print(model)
 
-current_path = '/home/doubibobo/桌面/婴儿啼哭识别 挑战赛/data/code/VGG/'
-path = '/train/wav_plot/'
+current_path = '/home/zhuchuanbo/competition/data/code/VGG/'
+path = 'train/wav_plot/'
 
 FILE_INPUT = '/wav_plot/'
 
@@ -31,27 +36,27 @@ if __name__ == '__main__':
     # # file_label_indexes的类型是 {
     # #   filename: label
     # # }
-    # file_label_indexes = bf.get_filename("train")
+    file_label_indexes = bf.get_filename("train", file=tg.fileOriginGrayPath)
     # # # 获取频谱图
     # # fe.extract_spectrogram(file_label_indexes, "test", False, FILE_INPUT)
-    # # 将字典数据转化为列表元素
-    # csv_data, label = [], []
-    # for key, value in file_label_indexes.items():
-    #     csv_data.append(key[:-3] + 'png')
-    #     label.append(label_encode.get(value))
+    # 将字典数据转化为列表元素
+    csv_data, label = [], []
+    for key, value in file_label_indexes.items():
+        csv_data.append(value +'/' + key[:-3] + 'png')
+        label.append(label_encode.get(value))
 
-    # # 划分训练集,测试集(按照7:3的比例划分),得到list形式
-    # data_train, label_train, data_test, label_test = da.split_train_test(csv_data, label)
+    # 划分训练集,测试集(按照7:3的比例划分),得到list形式
+    data_train, label_train, data_test, label_test = da.split_train_test(csv_data, label)
 
     # 移动文件,在train文件夹中明确划分data_train和data_test
-    # if not os.path.exists(path + 'data_train'):
-    #     os.makedirs(path + 'data_train')
-    # if not os.path.exists(path + 'data_test'):
-    #     os.makedirs(path + 'data_test')
-    # for file_name in data_train:
-    #     shutil.move(current_path + path + file_name, current_path + path + 'data_train')
-    # for file_name in data_test:
-    #     shutil.move(current_path + path + file_name, current_path + path + 'data_test')
+    if not os.path.exists(path + 'data_train'):
+        os.makedirs(path + 'data_train')
+    if not os.path.exists(path + 'data_test'):
+        os.makedirs(path + 'data_test')
+    for file_name in data_train:
+        shutil.copy(tg.fileOriginGrayPath + '/train/' + file_name, current_path + path + 'data_train')
+    for file_name in data_test:
+        shutil.copy(tg.fileOriginGrayPath + '/train/' + file_name, current_path + path + 'data_test')
 
     # 进行图片的变换
     transform = transforms.Compose([

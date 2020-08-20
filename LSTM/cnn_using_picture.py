@@ -14,7 +14,7 @@ from data.code.tools.feature_tools import build_file_index as bf
 
 # 定义超参数
 K = 10
-EPOCH_NUMBER = 1000
+EPOCH_NUMBER = 300
 LEARNING_RATE = 0.001
 BATCH_SIZE = 32
 OUTPUT_SIZE = 6
@@ -22,7 +22,7 @@ WEIGHT_DELAY = 1e-8
 IMAGE_HEIGHT = 300
 IMAGE_WIDTH = 300
 
-FILE_NAME = "model/cnn_model_image_01.pkl"
+FILE_NAME = "model/cnn_model_image_linear_01.pkl"
 
 
 if __name__ == '__main__':
@@ -36,6 +36,9 @@ if __name__ == '__main__':
     # 构建卷积神经网络
     network = [net.CNNClassify(1, OUTPUT_SIZE, kernel_size=(3, 3), stride=(3, 3), padding=0, pool_size=(3, 3))
                for i in range(K)]
+    # 神经网路参数初始化
+    for i in range(len(network)):
+        network[i].apply(net.weights_init)
 
     # 打印神经网络的结构
     summary(network[0], (1, IMAGE_HEIGHT, IMAGE_WIDTH), device="cpu")
@@ -45,10 +48,13 @@ if __name__ == '__main__':
     for key, value in file_label_indexes.items():
         image = Image.open(tg.fileOriginGrayPath + "train/" + value + "/" + key)
         image = image.resize((300, 300), Image.ANTIALIAS)
+        # 对image数据做归一化操作，除255
         numpy_data.append(numpy.asarray(image))
         numpy_label.append(da.label_classes[value])
 
-    torch_data, torch_label = torch.from_numpy(numpy.asarray(numpy_data)), torch.from_numpy(numpy.asarray(numpy_label))
+    # a = numpy.asarray(numpy_data) / 255
+
+    torch_data, torch_label = torch.from_numpy(numpy.asarray(numpy_data) / 255), torch.from_numpy(numpy.asarray(numpy_label))
 
     del numpy_data, numpy_label
     torch_data = torch.reshape(torch_data, (-1, 1, IMAGE_HEIGHT, IMAGE_WIDTH))

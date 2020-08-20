@@ -310,15 +310,15 @@ def write_data_to_csv_file(header, indexes, filename, selection, to_frame=False,
                 # wav_pitch_shift = librosa.effects.pitch_shift(wav, sample_rate, n_steps=3.0)
                 # wav_roll = np.roll(wav, sample_rate * 10)
                 # frames = [wav, wav_time_stretch, wav_pitch_shift, wav_roll]
-                frames = []
+                # frames = []
                 # 以2s作为一个语音帧，无step进行划分，没有进行VAD操作
                 # 计算共有多少语音帧
                 # 计算一段语音中包含的帧数
-                number = int(np.ceil(float(np.abs(len(wav) - 2 * sample_rate)) / (2 * sample_rate)))
-                # number = len(wav) // (2 * sample_rate)
-                for i in range(number):
-                    frames.append(wav[int(2 * i * sample_rate): int(2 * (i + 1) * sample_rate)])
-                # frames = [wav]
+                # number = int(np.ceil(float(np.abs(len(wav) - 2 * sample_rate)) / (2 * sample_rate)))
+                # # number = len(wav) // (2 * sample_rate)
+                # for i in range(number):
+                #     frames.append(wav[int(2 * i * sample_rate): int(2 * (i + 1) * sample_rate)])
+                frames = [wav]
                 print(os.path.split(file_path)[1])
             for i in range(len(frames)):
                 chroma_stft = librosa.feature.chroma_stft(y=frames[i], sr=sample_rate, n_fft=frame_length,
@@ -338,21 +338,35 @@ def write_data_to_csv_file(header, indexes, filename, selection, to_frame=False,
                 rms = librosa.feature.rms(y=frames[i], hop_length=step_length, frame_length=frame_length).T
                 zcr = librosa.feature.zero_crossing_rate(y=frames[i], hop_length=step_length, frame_length=frame_length).T
 
-                # 保留时域特征，不取平均值，所有特征的第一维是：201，即帧的数目
-                for j in range(len(mfcc)):
-                    file_name = (key if selection == "train" else os.path.split(key)[1])[: -4] + '_' + str(i) + '.wav'
-                    to_append = f'{file_name} {np.mean(chroma_stft[j])} {np.mean(rms[j])} {np.mean(spec_cent[j])} ' \
-                                f'{np.mean(spec_bw[j])} {np.mean(rolloff[j])} {np.mean(zcr[j])} '
-                    for e in mfcc[j]:
-                        to_append += f'{e} '
-                    to_append += f'{value} '
-                    if to_frame:
-                        to_append += f'{j} '
-                    file = open(filename, 'a', newline='')
-                    with file:
-                        writer = csv.writer(file)
-                        writer.writerow(to_append.split())
-                        file.close()
+                # 不保留时域特征，第一维为帧长1502， 第二维为每个元素的特征
+                to_append = f'{(key if selection == "train" else os.path.split(key)[1])} {np.mean(chroma_stft)} ' \
+                            f'{np.mean(rms)} {np.mean(spec_cent)} {np.mean(spec_bw)} {np.mean(rolloff)} {np.mean(zcr)} '
+                for e in np.mean(mfcc, axis=0):
+                    to_append += f'{e} '
+                to_append += f'{value} '
+                if to_frame:
+                    to_append += f'{i} '
+                file = open(filename, 'a', newline='')
+                with file:
+                    writer = csv.writer(file)
+                    writer.writerow(to_append.split())
+                    file.close()
+
+                # # 保留时域特征，不取平均值，所有特征的第一维是：201，即帧的数目
+                # for j in range(len(mfcc)):
+                #     file_name = (key if selection == "train" else os.path.split(key)[1])[: -4] + '_' + str(i) + '.wav'
+                #     to_append = f'{file_name} {np.mean(chroma_stft[j])} {np.mean(rms[j])} {np.mean(spec_cent[j])} ' \
+                #                 f'{np.mean(spec_bw[j])} {np.mean(rolloff[j])} {np.mean(zcr[j])} '
+                #     for e in mfcc[j]:
+                #         to_append += f'{e} '
+                #     to_append += f'{value} '
+                #     if to_frame:
+                #         to_append += f'{j} '
+                #     file = open(filename, 'a', newline='')
+                #     with file:
+                #         writer = csv.writer(file)
+                #         writer.writerow(to_append.split())
+                #         file.close()
 
 
 def write_result_to_csv(data_file, filename, results, time_step=None, final=None):
@@ -361,7 +375,8 @@ def write_result_to_csv(data_file, filename, results, time_step=None, final=None
     :param filename: 文件名称
     :param data_file: 测试集
     :param results: 识别结果
-    :param time_step: 测试语音文件是否分帧（每一个语音文件含有的时间步），默认为None，不分帧。
+    :param time_step: 测试语音文件是否分帧（每一个语音文件含有的时间步），默认为None，不分帧
+    :param final: 最终的文件路径
     :return:
     """
     file = open(filename, 'w', newline='')
@@ -384,8 +399,11 @@ def write_result_to_csv(data_file, filename, results, time_step=None, final=None
         print(results)
         for i in range(len(results)):
             dictionary[wav_paths[i]] = results[i]
-            # to_append = f'{wav_paths[i]} {classes_labels[results[i].csv_data.numpy()]} '
+            # to_append = f'{wav_paths[i]} {classes_labels[results[i].data.numpy()]} '
             to_append = f'{wav_paths[i]} {classes_labels[results[i]]} '
+            # to_append = f'{wav_paths[i]} '
+            # for value in results[i]:
+            #     to_append += f'{value} '
             file = open(filename, 'a', newline='')
             with file:
                 writer = csv.writer(file)
@@ -396,11 +414,11 @@ def write_result_to_csv(data_file, filename, results, time_step=None, final=None
 if __name__ == '__main__':
     from data.code.tools.image_tools import to_gray as tg
 
-    # 建立训练集文件路径与标签的索引
-    train_label_indexes = bf.get_filename("train")
-    print(train_label_indexes)
-    test_label_indexes = bf.get_filename("test")
-    print(test_label_indexes)
+    # # 建立训练集文件路径与标签的索引
+    # train_label_indexes = bf.get_filename("train")
+    # print(train_label_indexes)
+    # test_label_indexes = bf.get_filename("test")
+    # print(test_label_indexes)
 
     # # 获取训练集的原始频谱图
     # extract_spectrogram(train_label_indexes, "train", True, tg.fileOriginPath)
@@ -412,13 +430,18 @@ if __name__ == '__main__':
     # extract_spectrogram_mfcc(train_label_indexes, "train", None, tg.fileMel2sPath, True)
     # extract_spectrogram_mfcc(test_label_indexes, "test", None, tg.fileMel2sPath, True)
 
-    # # 转化频谱图为灰度图
+    # 转化频谱图为灰度图
+    # train_label_indexes = bf.get_filename("train", file=tg.fileOriginPath)
+    # test_label_indexes = bf.get_filename("test", file=tg.fileOriginPath)
     # tg.spectrogram_to_gray(train_label_indexes, True, tg.fileOriginPath, tg.fileOriginGrayPath)
     # tg.spectrogram_to_gray(train_label_indexes, True, tg.fileMelPath, tg.fileMelGrayPath)
     # tg.spectrogram_to_gray(test_label_indexes, False, tg.fileOriginPath, tg.fileOriginGrayPath)
     # tg.spectrogram_to_gray(test_label_indexes, False, tg.fileMelPath, tg.fileMelGrayPath)
 
-    # 将其特征写入csv文件中
+    # # 将其特征写入csv文件中
+    train_label_indexes = bf.get_filename("train", file=tg.fileWavPath)
+    test_label_indexes = bf.get_filename("test", file=tg.fileWavPath)
+
     headers = extract_features()
-    write_data_to_csv_file(headers, train_label_indexes, "../../data/csv_data/train_mfcc_20_new_2s_time.csv", "train")
-    write_data_to_csv_file(headers, test_label_indexes, "../../data/csv_data/test_mfcc_20_new_2s_time.csv", "test")
+    write_data_to_csv_file(headers, train_label_indexes, "../../data/csv_data/train_mfcc_20_new_15s.csv", "train")
+    write_data_to_csv_file(headers, test_label_indexes, "../../data/csv_data/test_mfcc_20_new_15s.csv", "test")

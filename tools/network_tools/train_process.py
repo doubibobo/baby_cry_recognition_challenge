@@ -1,7 +1,9 @@
 import torch
+import torch.optim
 
 from torch import nn
 from torch.utils.data import DataLoader
+from tensorboardX import SummaryWriter
 
 from data.code.tools.data_tools import data_analysis as da, mix_up as mu
 from data.code.tools.network_tools import base_class as bc
@@ -12,8 +14,12 @@ from data.code.tools.training_tools import statistics_counter as sc
 from data.code.tools.algorithm import Adam as Adam_GCC
 
 
+# 使用tensorboardX保存训练日志，并且设置保存地址
+writer = SummaryWriter("/home/zhuchuanbo/competition/log")
+
+
 def train(network, data_train, label_train, data_validation, label_validation, learning_rate,
-          epoch_number=30, weight_decay=0.0001, batch_size=32, gpu_available=False, alpha=0):
+          epoch_number=30, weight_decay=0.0003, batch_size=32, gpu_available=False, alpha=0, test_data=None, ):
     """
     神经网络训练过程
     :param network: 构造的神经网络
@@ -45,50 +51,68 @@ def train(network, data_train, label_train, data_validation, label_validation, l
     # 将数据封装成DataLoader
     dataset = bc.TrainDataSet(data_train, label_train)
 
-    # 进行数据封装
-    train_iter = DataLoader(dataset, batch_size, shuffle=True)
-
     # 使用cross_entropy损失函数
     loss_function = nn.CrossEntropyLoss()
 
     # 使用Adam优化算法
     optimizer = torch.optim.Adam(params=network.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    # optimizer = torch.optim.SGD(params=network.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
     # 使用改进的Adam_GC优化算法
     # optimizer = Adam_GCC.Adam_GC(params=network.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
     # 动态调整学习率
-    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=200, gamma=0.1)
+    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.1)
     # 使用GPU
     if gpu_available:
         loss_function = loss_function.cuda()
 
     # 分批训练
     for epoch in range(epoch_number):
+        # 进行数据封装，注意这一步是对数据进行了打乱
+        train_iter = DataLoader(dataset, batch_size, shuffle=True)
         # scheduler.step(epoch)
-        for batch_index, (inputs, targets) in enumerate(train_iter):
-            if gpu_available:
-                inputs, targets = inputs.cuda(), targets.cuda()
-            inputs, targets_a, targets_b, lam = mu.mix_data(inputs, targets, alpha, gpu_available)
-            outputs = network(inputs)
-            loss_func = mu.mix_criterion(targets_a, targets_b, lam)
-            loss = loss_func(loss_function, outputs)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-
-        # for X, y in train_iter:
-        #     output = network(X)
-        #     loss = loss_function(output, y)
+        # for batch_index, (inputs, targets) in enumerate(train_iter):
+        #     if gpu_available:
+        #         inputs, targets = inputs.cuda(), targets.cuda()
+        #     inputs, targets_a, targets_b, lam = mu.mix_data(inputs, targets, alpha, gpu_available)
+        #     outputs = network(inputs)
+        #     loss_func = mu.mix_criterion(targets_a, targets_b, lam)
+        #     loss = loss_func(loss_function, outputs)
         #     optimizer.zero_grad()
         #     loss.backward()
         #     optimizer.step()
+
+        for X, y in train_iter:
+            output = network(X)
+            loss = loss_function(output, y)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
         # 得到每个epoch的 loss 和 accuracy
         # print("epoch is ", epoch)
         loss_train.append(log_rmse(False, network, dataset.x_data, dataset.y_data, loss_function, epoch))
 
         if data_validation is not None:
             loss_validation.append(log_rmse(True, network, data_validation, label_validation, loss_function, epoch))
+
+        """
+        使用TensorBoard记录model, loss，accuracy和grad
+        """
+        # writer.add_graph(network, (inputs, ))
+        # writer.add_scalars('loss', {
+        #     'train_loss': loss_train[-1][0],
+        #     'valid_loss': loss_validation[-1][0]
+        # }, epoch+1)
+        # writer.add_scalars('accuracy', {
+        #     'train_accuracy': loss_train[-1][1],
+        #     'valid_accuracy': loss_validation[-1][1]
+        # }, epoch+1)
+
+        # for tag, value in network.named_parameters():
+        #     tag = tag.replace('.', '/')
+        # writer.add_histogram(tag, value.data.cpu().numpy(), epoch+1)
+        # writer.add_histogram(tag+'/grad', value.grad.data.cpu().numpy(), epoch+1)
         # scheduler.step(loss_validation[-1][1])
 
         # if data_validation is not None and loss_validation[-1][1] >= best_accuracy_validation:
@@ -127,9 +151,11 @@ def train_process(data_train_input, label_train_input, network, k_number, learni
     divided_list_index = da.get_k_fold_data_by_random(k_number, label_train_input)
 
     for i in range(k_number):
-
         data_train, label_train, data_validation, label_validation = da.get_k_fold_data(
             k_number, i, data_train_input, label_train_input, divided_list_index)
+        # del data_train_input, label_train_input, divided_list_index
+        # data_train, label_train = data_train[0: 32 * 9], label_train[0: 32 * 9]
+        # data_validation, label_validation = data_validation[0: 32*1], label_validation[0: 32*1]
         print('*' * 25, '第', i + 1, '折开始', '*' * 25)
         sc.counter_statistics(label_validation)
         sc.counter_statistics(label_train)
@@ -138,7 +164,7 @@ def train_process(data_train_input, label_train_input, network, k_number, learni
                                             label_validation, learning_rate, epoch_number, weight_decay, batch_size,
                                             gpu_available, 2)
         # 画出训练过程中的accuracy和loss变换曲线
-        alp.accuracy_loss_plotting(loss_train, epoch_number, i,  True)
+        alp.accuracy_loss_plotting(loss_train, epoch_number, i, True)
         alp.accuracy_loss_plotting(loss_validation, epoch_number, i, False)
 
         # 输出这一批数据的最终训练结果
@@ -147,9 +173,9 @@ def train_process(data_train_input, label_train_input, network, k_number, learni
               'valid_loss:%.6f' % loss_validation[-1][0], 'valid_accuracy:%.4f' % loss_validation[-1][1])
 
         # TODO: 对K折交叉验证的理解有问题，导致整体的网络训练出现了问题
-        # # 确定并保存当前最好的训练结果，这里是保存整个网络
+        # 确定并保存当前最好的训练结果，这里是保存整个网络
         # if loss_validation[-1][1] >= best_loss_accuracy_validation:
-        #     torch.save(network[i], network_filename)
+        torch.save(network[i], network_filename + str(i))
 
         loss_train_sum += loss_train[-1][0]
         loss_validation_sum += loss_validation[-1][0]
@@ -204,14 +230,19 @@ def test_process(data_test, network_filename="net.pkl", gpu_available=False):
     """
     # 加载最好的模型，并返回预测值
     network = torch.load(network_filename)
+    print(network)
+    network.eval()
     if gpu_available:
         network = network.cuda()
         data_test = data_test.cuda()
     prediction = network(data_test.float())
+    prediction = torch.nn.functional.log_softmax(prediction)
+
     maxing = torch.max(prediction, 1)
     result = torch.max(prediction, 1)[1]
 
-    # if gpu_available:
-    #     return result.cpu()
-    # return result
-    return prediction
+    if gpu_available:
+        return result.cpu()
+        # return prediction.cpu()
+    return result
+    # return prediction

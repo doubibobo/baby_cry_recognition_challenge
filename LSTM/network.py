@@ -1,3 +1,5 @@
+import torch
+
 from collections import OrderedDict
 from torch import nn
 from torch.nn import functional
@@ -32,31 +34,37 @@ class CNNClassify(nn.Module):
         #       output-of-conv3 =====> batch_size, 32, 6, 26
         #       output-of-pool3 =====> batch_size, 32, 2, 26
         self.cnn = nn.Sequential(OrderedDict([
-            ("conv1", nn.Conv2d(input_channels, 16, kernel_size, stride, padding)),
-            ("batch_norm_conv1", nn.BatchNorm2d(16)),
+            # ("batch_norm_conv0", nn.BatchNorm2d(1)),
+            ("conv1", nn.Conv2d(input_channels, 32, kernel_size, stride, padding)),
+            # ("batch_norm_conv1", nn.BatchNorm2d(32)),
             ("relu1", nn.ReLU()),
-            ("conv2", nn.Conv2d(16, 32, kernel_size, stride, padding)),
-            ("batch_norm_conv2", nn.BatchNorm2d(32)),
-            ("relu2", nn.ReLU()),
-            ("conv3", nn.Conv2d(32, 32, kernel_size, stride, padding)),
-            ("batch_norm_conv3", nn.BatchNorm2d(32)),
-            ("relu3", nn.ReLU()),
             ("pool1", nn.MaxPool2d(pool_size)),
-            ("dropout1", nn.Dropout(0.5))
+
+            ("conv2", nn.Conv2d(32, 32, kernel_size, stride, padding)),
+            # ("batch_norm_conv2", nn.BatchNorm2d(32)),
+            ("relu2", nn.ReLU()),
+            ("pool2", nn.MaxPool2d(pool_size)),
+
+            # ("conv3", nn.Conv2d(64, 32, kernel_size, stride, padding)),
+            # # ("batch_norm_conv3", nn.BatchNorm2d(32)),
+            # ("relu3", nn.ReLU()),
+            # ("pool1", nn.MaxPool2d(pool_size)),
+            # ("dropout1", nn.Dropout(0.5))
         ]))
 
         # 全连接分类模块
         self.fully_connection = nn.Sequential(OrderedDict([
-            # ("layer1", nn.Linear(5184, 512)),
-            # ("batch_norm1", nn.BatchNorm1d(512)),
-            # ("dropout_norm_fully1", nn.Dropout(0.5)),
+            ("layer1", nn.Linear(960, class_number)),
+            ("batch_norm1", nn.BatchNorm1d(class_number)),
+            # ("dropout_norm_fully1", nn.Dropout(0.2)),
             # ("ReLU1", nn.ReLU()),
-            ("layer2", nn.Linear(288, 128)),
-            ("batch_norm2", nn.BatchNorm1d(128)),
-            ("dropout_norm_fully2", nn.Dropout(0.5)),
-            ("ReLU2", nn.ReLU()),
-            ("layer3", nn.Linear(128, class_number)),
-            ("soft1", nn.Softmax()),
+            # ("layer2", nn.Linear(256, 128)),
+            # ("batch_norm2", nn.BatchNorm1d(128)),
+            # # ("dropout_norm_fully2", nn.Dropout(0.2)),
+            # ("ReLU2", nn.ReLU()),
+            # ("layer3", nn.Linear(64, class_number)),
+            # ("batch_norm3", nn.BatchNorm1d(class_number)),
+            # ("soft1", nn.Softmax()),
         ]))
         # # 全连接分类模块
         # self.layer1 = nn.Linear(32 * 18 * 15, class_number)
@@ -80,21 +88,35 @@ class LSTMClassify(nn.Module):
     构建LSTM神经网络，用于encoder和decoder问题（即序列问题）
     """
 
-    def __init__(self, feature_dim, hidden_dim, layer_number, output_size=None):
+    def __init__(self, feature_dim, hidden_dim, layer_number, output_size=None, batch_size=32, time_step=201):
         """
         LSTM网络初始化方法
         :param feature_dim: 某一时刻的输入特征维度
         :param hidden_dim: 隐含层维度
         :param layer_number: 神经网络层数
         :param output_size: 种类数
+        :param batch_size: batch大小
+        :param time_step: 步长
         """
         super(LSTMClassify, self).__init__()
+        self.batch_size, self.time_step, self.hidden_size = batch_size, time_step, hidden_dim
         # 由于batch_first设置为true，所以输入数据形式为：(batch_size, seq_length, feature_dim)
-        self.rnn = nn.LSTM(input_size=feature_dim, hidden_size=hidden_dim, num_layers=layer_number, batch_first=True)
+        self.rnn = nn.LSTM(input_size=feature_dim, hidden_size=hidden_dim, num_layers=layer_number, batch_first=True,
+                           bidirectional=False)
         # 如果单独使用LSTM，则需要知道output_size
         if output_size is not None:
-            self.layer1 = nn.Linear(hidden_dim, output_size)
             self.output_size = output_size
+            # self.layer1 = nn.Linear(hidden_dim * time_step * 2, 128)
+            # self.layer2 = nn.Linear(128, 64)
+            # self.layer3 = nn.Linear(64, output_size)
+            # self.layer1_bn = nn.BatchNorm1d(128)
+            # self.layer2_bn = nn.BatchNorm1d(64)
+            # self.layer3_bn = nn.BatchNorm1d(output_size)
+
+            # self.drop1 = nn.Dropout(0.5)
+
+            self.layer_direction = nn.Linear(hidden_dim * time_step, output_size)
+            self.layer_direction_bn = nn.BatchNorm1d(output_size)
         else:
             self.output_size = None
 
@@ -104,6 +126,7 @@ class LSTMClassify(nn.Module):
         :param x: 输入值
         :return: 输出值
         """
+        # print(x.shape)
         # rnn_output的数据格式为： (batch, seq_len, num_directions * hidden_size)
         rnn_output, (_, _) = self.rnn(x, None)
 
@@ -111,8 +134,22 @@ class LSTMClassify(nn.Module):
             # output的数据格式为：(batch, num_directions * hidden_size)
             # 这里选取最后一个时间节点的rnn_output输出，也就是h_n，
             # 在实践中发现，最后一个时间节点大多为补充帧，对模型的分类效果可能较差，这里选取倒数第二个时间节点数据。
-            output = self.layer1(rnn_output[:, -2, :])
-            return functional.softmax(output)
+            rnn_output = torch.reshape(rnn_output, (-1, self.time_step * self.hidden_size))
+            # output = self.layer1(rnn_output[:, -1, :])
+            # output = self.layer1(rnn_output)
+            # output = self.layer1_bn(output)
+            # output = functional.relu6(output)
+            # output = self.layer2(output)
+            # output = self.layer2_bn(output)
+            # output = functional.relu(output)
+            # output = self.layer3(output)
+            # output = self.layer3_bn(output)
+            output = self.layer_direction(rnn_output)
+            output = self.layer_direction_bn(output)
+            output = functional.tanh(output)
+            # output = self.drop1(output)
+            return output
+            # return functional.softmax(output)
         return rnn_output
 
 
@@ -153,3 +190,19 @@ class CombineClassify(nn.Module):
         # 将数据送入CNN中，输出为线性的softmax
         cnn_output = self.cnn(cnn_input)
         return cnn_output
+
+
+def weights_init(network):
+    """
+    神经网络参数初始化
+    :param network： 待初始化参数的神经网络
+    :return 无返回值
+    """
+    if isinstance(network, nn.Conv2d):
+        print("123")
+        # bias = network.bias
+        nn.init.kaiming_uniform_(network.weight)
+        # nn.init.xavier_uniform_(network.bias, 0)
+    if isinstance(network, nn.BatchNorm2d) or isinstance(network, nn.BatchNorm1d):
+        print("456")
+        network.eval()

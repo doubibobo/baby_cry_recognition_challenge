@@ -8,7 +8,7 @@ label_classes = {"awake": 0, "diaper": 1, "hug": 2,
                  "hungry": 3, "sleepy": 4, "uncomfortable": 5}
 
 "明确整个数据集中，各个类型的数量及总数量"
-number_classes = [0, 0, 0, 0, 0, 0]
+number_classes = [1, 1, 1, 1, 1, 1]
 sum_number = sum(number_classes)
 expect_proportion = [number_classes[i] / sum_number for i in range(len(number_classes))]
 
@@ -37,11 +37,12 @@ def csv_handle(filename, another_file=None, is_test=False):
 
     # 删除对训练数据无用的列，文件名只是训练时的标志序号
     data = data.drop(['filename'], axis=1)
-
     # 对标签进行编码，用iloc函数提取最后一列[:, -1]，如果是去除最后一列以外的所有列[:, :-1]
     labels = [label_classes.get(genre_list) for genre_list in data.iloc[:, -1]]
-    number = [number_classes[label] + 1 for label in labels]
-    print(number)
+    for label in labels:
+        number_classes[label] += 1
+    print(number_classes)
+    print([number_classes[i] / 201 for i in range(len(number_classes))])
 
     # 预处理数据：去均值和方差规模化，即将特征数据的分布调整成标准正态分布（高斯分布），使得数据的均值为0,方差为1
     torch_data = torch.from_numpy(numpy.array(data.iloc[:, :-1], dtype=float))
@@ -161,3 +162,42 @@ def split_train_test(data, label):
     data_train, data_test = data[list_index[0: boarder], :].T, data[list_index[boarder: len(data)], :].T
     label_train, label_test = label[list_index[0: boarder], :].T, label[list_index[boarder: len(label)], :].T
     return data_train.tolist()[0], label_train.tolist()[0], data_test.tolist()[0], label_test.tolist()[0]
+
+
+def csv_handle_new(filename, is_test=False):
+    """
+    处理获取的csv文件，如：删除对训练无用的filename等
+    @:arg
+        filename: csv的文件路径
+        another_file: 判断是否有第二个csv文件
+        is_test: 判断是否是测试集文件
+    @:returns
+        torch_data: 数据集
+        labels: 标签
+    """
+    # 设置初始值
+    data = pd.read_csv(filename)
+
+    # 提取第一列的文件名
+    file_name_col = data['filename'].copy()
+    # 统计每个文件出现的次数
+    counts = data['filename'].value_counts().T
+
+    # 删除对训练数据无用的列，文件名只是训练时的标志序号
+    data = data.drop(['filename'], axis=1)
+    # 对标签进行编码，用iloc函数提取最后一列[:, -1]，如果是去除最后一列以外的所有列[:, :-1]
+    labels = [label_classes.get(genre_list) for genre_list in data.iloc[:, -1]]
+    for label in labels:
+        number_classes[label] += 1
+
+    # 预处理数据：去均值和方差规模化，即将特征数据的分布调整成标准正态分布（高斯分布），使得数据的均值为0,方差为1
+    torch_data = torch.from_numpy(numpy.array(data.iloc[:, :-1], dtype=float))
+    x_mean = torch_data.mean(dim=0, keepdim=True)
+    x_standard = torch_data.std(dim=0, unbiased=False, keepdim=True)
+    torch_data -= x_mean
+    torch_data /= x_standard
+
+    if is_test:
+        return torch_data, file_name_col
+    else:
+        return torch_data, torch.from_numpy(numpy.array(labels)), counts

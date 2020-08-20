@@ -1,11 +1,14 @@
 import cv2
 import os
 
-fileOriginPath = "/home/doubibobo/桌面/婴儿啼哭识别 挑战赛/data/code/data/image_data/image_data/"
+fileWavPath = "C:\\Users\\doubibobo\\Desktop\\baby_cry_competition\\data\\code\\data\\wav_data\\original-data\\"
+
+fileOriginPath = "C:\\Users\\doubibobo\\Desktop\\baby_cry_competition\\data\\code\\data\\image_data\\image_data\\"
 fileMelPath = "/home/doubibobo/桌面/婴儿啼哭识别 挑战赛/data/code/data/image_data/mel_data/"
 fileMel2sPath = "/home/doubibobo/桌面/婴儿啼哭识别 挑战赛/data/code/data/image_data/mel_data_2s/"
 
-fileOriginGrayPath = "/home/doubibobo/桌面/婴儿啼哭识别 挑战赛/data/code/data/image_data/image_data_gray/"
+# fileOriginGrayPath = "C:\\Users\\doubibobo\\Desktop\\baby_cry_competition\\data\\code\\data\\image_data\\image_data_gray\\"
+fileOriginGrayPath = "/home/zhuchuanbo/competition/data/code/data/image_data/image_data_gray/"
 fileMelGrayPath = "/home/doubibobo/桌面/婴儿啼哭识别 挑战赛/data/code/data/image_data/mel_data_gray/"
 fileMel2sGrayPath = "/home/doubibobo/桌面/婴儿啼哭识别 挑战赛/data/code/data/image_data/mel_data_2s_gray/"
 
@@ -23,10 +26,12 @@ def spectrogram_to_gray(file_name, is_train, file_path, image_data_gray="image_d
     # 创建对应类的频谱图文件夹
     for key, value in file_name.items():
         # k即是原始文件路径
-        image_gray = cv2.imread((file_path + selection + "/" + value + "/" + key)
+        image_gray = cv2.imread((file_path + selection + "\\" + value + "\\" + key)
                                 if is_train else key, cv2.IMREAD_GRAYSCALE)
         # 存储对应灰度图
         if is_train:
-            cv2.imwrite(image_data_gray + selection + '/' + value + '/' + key, image_gray)
+            print(image_data_gray + selection + '\\' + value + '\\' + key)
+            cv2.imwrite(image_data_gray + selection + '\\' + value + '\\' + key, image_gray)
         else:
-            cv2.imwrite(image_data_gray + selection + '/' + os.path.split(key)[1], image_gray)
+            print(image_data_gray + selection + '\\' + os.path.split(key)[1])
+            cv2.imwrite(image_data_gray + selection + '\\' + os.path.split(key)[1], image_gray)
